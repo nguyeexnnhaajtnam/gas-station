@@ -1,0 +1,101 @@
+<app-page-header
+  eyebrow="Đơn vị vận hành"
+  title="Trạm xăng"
+  [subtitle]="'Chọn trạm để bắt đầu quản lý vận hành · ' + (context.selectedCompany()?.name || '')"
+>
+  <a actions class="btn btn-secondary" routerLink="/companies">Đổi công ty</a>
+</app-page-header>
+
+@if (selectionError()) {
+  <div class="error-banner" role="alert">
+    <svg lucideCircleAlert [size]="16"></svg>
+    <span>{{ selectionError() }}</span>
+    <button type="button" class="btn-icon" aria-label="Đóng" (click)="dismissSelectionError()">
+      <svg lucideX [size]="14"></svg>
+    </button>
+  </div>
+}
+
+<div class="toolbar">
+  <app-search-field placeholder="Tìm kiếm trạm…" [value]="query()" (queryChange)="query.set($event)"></app-search-field>
+  <span class="count">{{ resultCountLabel() }}</span>
+  <span class="spacer"></span>
+  <button type="button" class="btn btn-secondary" disabled>
+    Thêm trạm
+    <span class="tag-soon">Sắp có</span>
+  </button>
+</div>
+
+@if (loading()) {
+  <div class="table-wrapper">
+    <app-skeleton type="rows" [rows]="3" [columns]="4"></app-skeleton>
+  </div>
+} @else if (error()) {
+  <div class="table-wrapper">
+    <app-error-state title="Không thể tải danh sách trạm" [message]="error()" (retry)="load()"></app-error-state>
+  </div>
+} @else if (filtered().length === 0) {
+  <div class="table-wrapper">
+    <app-empty-state title="Chưa có trạm" message="Không tìm thấy trạm phù hợp với điều kiện hiện tại."></app-empty-state>
+  </div>
+} @else {
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-name">Trạm</th>
+          <th>Liên hệ</th>
+          <th>Email</th>
+          <th>Trạng thái</th>
+          <th class="col-actions" aria-label="Thao tác"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (station of filtered(); track station.id) {
+          <tr
+            class="clickable"
+            [class.activating]="activation.activatingStationId() === station.id"
+            [class.dimmed]="activation.activatingStationId() !== null && activation.activatingStationId() !== station.id"
+            (click)="select(station)"
+            tabindex="0"
+            (keydown.enter)="select(station)"
+          >
+            <td class="col-name">
+              <div class="identity">
+                <span class="mono">{{ initial(station.name) }}</span>
+                <div>
+                  <strong>{{ shortName(station.name) }}</strong>
+                  <small>Mã trạm: {{ station.code || '—' }}</small>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div [class.muted]="!station.phone">{{ station.phone || 'Chưa có số điện thoại' }}</div>
+              <small class="muted">Chưa có địa chỉ</small>
+            </td>
+            <td class="nowrap" [class.muted]="!station.email">{{ station.email || 'Chưa có' }}</td>
+            <td><app-status-badge tone="unknown" label="Chưa xác định"></app-status-badge></td>
+            <td class="col-actions">
+              <button
+                type="button"
+                class="btn station-action"
+                [class.btn-primary]="activation.activatingStationId() !== station.id"
+                [class.btn-outline]="activation.activatingStationId() === station.id"
+                [disabled]="activation.activatingStationId() !== null"
+                (click)="$event.stopPropagation(); select(station)"
+              >
+                @if (activation.activatingStationId() === station.id) {
+                  <svg lucideLoaderCircle [size]="14" class="spin"></svg>
+                  Đang mở trạm…
+                } @else {
+                  Chọn trạm
+                  <svg lucideArrowRight [size]="14"></svg>
+                }
+              </button>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -1,0 +1,17 @@
+spring:
+  config:
+    import:
+      - optional:file:../.env.dev[.properties]
+      - optional:file:./.env.dev[.properties]
+  datasource:
+    url: ${DEV_DATABASE_URL:jdbc:postgresql://localhost:5432/gas-dev}
+    username: ${DEV_DATABASE_USERNAME:gas_dev}
+    password: ${DEV_DATABASE_PASSWORD:}
+  jpa:
+    hibernate.ddl-auto: validate
+  flyway:
+    enabled: true
+
+app:
+  data-source: ${APP_DATA_SOURCE:seenpro}
+  cors-origins: ${CORS_ORIGINS:http://localhost:4200}

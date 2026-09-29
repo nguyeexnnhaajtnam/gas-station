@@ -1,0 +1,284 @@
+// Design tokens — see docs/design_handoff_gas_station_ui/README.md
+:root {
+  // Color
+  --bg: #f3f2f2;
+  --surface: #f8f4f4;
+  --surface-2: #eae7e7;
+  --line-soft: #d7d3d3;
+  --line: rgba(32, 30, 29, .40);
+  --text: #201e1d;
+  --text-2: #605d5d;
+  --text-3: #7d7979;
+  --text-muted: #9b9797;
+  --accent: #ec3013;
+  --accent-hover: #dd2b0f;
+  --accent-active: #ae1800;
+  --accent-text: #ae1800;
+  --sidebar-bg: #2d2b2b;
+  --sidebar-line: #444141;
+  --sidebar-text: #d7d3d3;
+  --sidebar-text-muted: #bab6b6;
+  --sidebar-group-label: #9b9797;
+  --success: #2e7d4f;
+  --warning: #a15c00;
+  --danger: #ae1800;
+  --unknown: #9b9797;
+  --error-bg: #fff2ef;
+  --error-border: #ffc4b8;
+  --error-text: #7c1405;
+
+  // Type
+  --font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+
+  // Spacing scale
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-7: 32px;
+
+  // Shape
+  --radius: 0;
+  --shadow-float: 0 12px 32px rgba(45, 43, 43, .22);
+
+  // Layout dimensions
+  --sidebar-width: 248px;
+  --sidebar-width-collapsed: 64px;
+  --topbar-height: 56px;
+
+  // Control heights
+  --control-h-lg: 38px;
+  --control-h-md: 36px;
+  --control-h-row: 34px;
+  --control-h-icon: 32px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-family);
+  font-size: 14px;
+  line-height: 1.5;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
+a {
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
+}
+
+// Buttons — shared primitives used across every feature page
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--control-h-lg);
+  padding: 0 var(--space-4);
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background-color .12s ease, border-color .12s ease, opacity .12s ease;
+}
+
+.btn:disabled {
+  opacity: .45;
+}
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--accent-hover);
+  border-color: var(--accent-hover);
+}
+
+.btn-primary:active:not(:disabled) {
+  background: var(--accent-active);
+  border-color: var(--accent-active);
+}
+
+.btn-secondary {
+  background: var(--surface);
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.btn-secondary:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.btn-outline {
+  background: transparent;
+  border-color: var(--line);
+  color: var(--text);
+}
+
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--control-h-icon);
+  height: var(--control-h-icon);
+  padding: 0;
+  border-radius: var(--radius);
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--text-2);
+}
+
+.btn-icon:hover:not(:disabled) {
+  background: var(--surface-2);
+}
+
+.tag-soon {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-muted);
+  border: 1px solid var(--line-soft);
+}
+
+// Data table — shared primitive reused by Company / Station / Transactions tables
+.table-wrapper {
+  overflow-x: auto;
+  overflow-y: hidden;
+  border-top: 2px solid var(--text);
+  background: var(--surface);
+}
+
+.table-wrapper table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-wrapper thead th {
+  position: sticky;
+  top: 0;
+  text-align: left;
+  padding: var(--space-3) var(--space-4);
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-2);
+  background: var(--surface);
+  border-bottom: 2px solid var(--line);
+  white-space: nowrap;
+}
+
+.table-wrapper tbody td {
+  padding: var(--space-3) var(--space-4);
+  font-size: 14px;
+  color: var(--text);
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: middle;
+}
+
+.table-wrapper tbody tr.clickable {
+  cursor: pointer;
+}
+
+.table-wrapper tbody tr.clickable:hover {
+  background: var(--surface-2);
+}
+
+.table-wrapper td.muted,
+.table-wrapper span.muted {
+  color: var(--text-muted);
+}
+
+.table-wrapper td.num,
+.table-wrapper th.num {
+  text-align: right;
+}
+
+.error-banner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-4);
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+  font-size: 13.5px;
+}
+
+.error-banner span {
+  flex: 1;
+}
+
+.error-banner svg {
+  flex: none;
+}
+
+@keyframes icon-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.spin {
+  animation: icon-spin 0.9s linear infinite;
+}
+
+@keyframes skeleton-pulse {
+  0% {
+    opacity: 1;
+  }
+
+  50% {
+    opacity: .45;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}

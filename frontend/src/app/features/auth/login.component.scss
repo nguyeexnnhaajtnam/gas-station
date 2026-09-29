@@ -1,0 +1,111 @@
+:host {
+  display: block;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: var(--space-6);
+  background: var(--bg);
+}
+
+.login-card {
+  width: min(420px, 100%);
+  background: var(--surface);
+  border: 1px solid var(--line-soft);
+  padding: var(--space-7);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-7);
+}
+
+.mark {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  color: #fff;
+}
+
+.brand b {
+  display: block;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.brand small {
+  display: block;
+  color: var(--text-3);
+  font-size: 12px;
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+.intro {
+  margin: var(--space-2) 0 var(--space-6);
+  color: var(--text-2);
+  font-size: 13.5px;
+}
+
+form {
+  display: grid;
+  gap: var(--space-2);
+}
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+  margin-top: var(--space-2);
+}
+
+input {
+  width: 100%;
+  height: var(--control-h-lg);
+  border: 1px solid var(--line);
+  background: var(--bg);
+  padding: 0 var(--space-3);
+  font: inherit;
+  outline: none;
+}
+
+input:focus {
+  border-color: var(--accent);
+}
+
+form .btn {
+  margin-top: var(--space-3);
+  width: 100%;
+  justify-content: center;
+}
+
+.form-message {
+  margin-top: var(--space-2);
+  padding: var(--space-3);
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 13px;
+}
+
+.form-message.error {
+  background: var(--error-bg);
+  color: var(--error-text);
+}
+
+.note {
+  display: block;
+  text-align: center;
+  margin-top: var(--space-6);
+  color: var(--text-3);
+  font-size: 12px;
+  line-height: 1.5;
+}

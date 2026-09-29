@@ -1,0 +1,9 @@
+:host {
+  display: block;
+}
+
+.panel {
+  background: var(--surface);
+  border-top: 2px solid var(--text);
+  padding: 0 var(--space-4);
+}

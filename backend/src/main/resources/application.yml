@@ -1,0 +1,29 @@
+spring:
+  application.name: gas-station-backend
+  profiles.default: dev
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/gas_station}
+    username: ${POSTGRES_USER:gas_app}
+    password: ${POSTGRES_PASSWORD:gas_app_local}
+  jpa:
+    open-in-view: false
+    hibernate.ddl-auto: validate
+  flyway.enabled: true
+  cache:
+    type: caffeine
+    caffeine.spec: ${CACHE_SPEC:maximumSize=500,expireAfterWrite=30s}
+server:
+  port: ${SERVER_PORT:8080}
+app:
+  data-source: ${APP_DATA_SOURCE:seenpro}
+  cors-origins: ${CORS_ORIGINS:http://localhost:4200}
+  seenpro:
+    base-url: ${SEENPRO_BASE_URL:}
+    username: ${SEENPRO_USERNAME:}
+    password: ${SEENPRO_PASSWORD:}
+    connect-timeout: 5s
+    read-timeout: 15s
+    realtime-poll-interval: 5s
+springdoc.swagger-ui.path: /swagger-ui.html
+management.endpoints.web.exposure.include: health,info
+logging.pattern.level: "%5p [requestId:%X{requestId:-none}]"

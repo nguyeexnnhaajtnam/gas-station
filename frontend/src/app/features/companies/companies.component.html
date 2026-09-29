@@ -1,0 +1,65 @@
+<app-page-header eyebrow="Quản trị hệ thống" title="Công ty / Đại lý" subtitle="Chọn đơn vị để tiếp tục quản lý hệ thống">
+  <button actions type="button" class="btn btn-primary" disabled title="Chưa triển khai quyền tạo đơn vị">
+    <svg lucidePlus [size]="16"></svg>
+    Thêm đơn vị
+  </button>
+</app-page-header>
+
+<div class="toolbar">
+  <app-search-field placeholder="Tìm theo tên, mã đơn vị, điện thoại…" [value]="query()" (queryChange)="query.set($event)"></app-search-field>
+  <span class="count">{{ resultCountLabel() }}</span>
+</div>
+
+@if (loading()) {
+  <div class="table-wrapper">
+    <app-skeleton type="rows" [rows]="4" [columns]="5"></app-skeleton>
+  </div>
+} @else if (error()) {
+  <div class="table-wrapper">
+    <app-error-state title="Không thể tải danh sách công ty" [message]="error()" (retry)="load()"></app-error-state>
+  </div>
+} @else if (filtered().length === 0) {
+  <div class="table-wrapper">
+    <app-empty-state title="Chưa có công ty / đại lý" message="Không tìm thấy đơn vị phù hợp với điều kiện hiện tại."></app-empty-state>
+  </div>
+} @else {
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th class="col-name">Tên đơn vị</th>
+          <th>Mã đơn vị</th>
+          <th>Điện thoại</th>
+          <th>Email</th>
+          <th>Trạng thái</th>
+          <th class="col-actions" aria-label="Thao tác"></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (company of filtered(); track company.id) {
+          <tr class="clickable" (click)="select(company)" tabindex="0" (keydown.enter)="select(company)">
+            <td class="col-name">
+              <div class="identity">
+                <span class="mono">{{ initial(company.name) }}</span>
+                <div>
+                  <strong>{{ company.name }}</strong>
+                  <small>Chọn để tiếp tục quản lý</small>
+                </div>
+              </div>
+            </td>
+            <td><code>{{ company.code || '—' }}</code></td>
+            <td [class.muted]="!company.phone">{{ company.phone || 'Chưa có' }}</td>
+            <td [class.muted]="!company.email">{{ company.email || 'Chưa có' }}</td>
+            <td><app-status-badge [tone]="statusTone(company.status)" [label]="statusLabel(company.status)"></app-status-badge></td>
+            <td class="col-actions">
+              <button type="button" class="btn-icon" aria-label="Tác vụ" (click)="$event.stopPropagation()">
+                <svg lucideEllipsis [size]="16"></svg>
+              </button>
+              <svg lucideChevronRight [size]="16" class="chevron"></svg>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

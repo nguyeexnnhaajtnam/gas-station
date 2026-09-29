@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-gas_station}
+      POSTGRES_USER: ${POSTGRES_USER:-gas_app}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-gas_app_local}
+    ports:
+      - "5432:5432"
+    volumes:
+      - gas-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  gas-postgres:
+

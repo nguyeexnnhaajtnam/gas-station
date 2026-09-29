@@ -1,0 +1,29 @@
+<header class="topbar">
+  <app-breadcrumb [items]="breadcrumbItems()"></app-breadcrumb>
+
+  <div class="right">
+    <app-context-switcher></app-context-switcher>
+
+    <button type="button" class="btn-icon" title="Thông báo" disabled>
+      <svg lucideBell [size]="18"></svg>
+    </button>
+
+    <div class="user-menu">
+      <button type="button" class="avatar" (click)="toggleUserMenu()">
+        <svg lucideUser [size]="16"></svg>
+      </button>
+      @if (userMenuOpen()) {
+        <div class="menu">
+          <a class="menu-item" routerLink="/settings">
+            <svg lucideUser [size]="14"></svg>
+            Tài khoản của tôi
+          </a>
+          <button type="button" class="menu-item" (click)="logout()">
+            <svg lucideLogOut [size]="14"></svg>
+            Đăng xuất
+          </button>
+        </div>
+      }
+    </div>
+  </div>
+</header>

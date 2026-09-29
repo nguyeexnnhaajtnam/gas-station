@@ -1,0 +1,21 @@
+<app-page-header eyebrow="Nhiên liệu" title="Bồn bể" subtitle="Tồn kho nhiên liệu ước tính theo bồn"></app-page-header>
+
+@if (loading()) {
+  <div class="panel">
+    <app-skeleton type="rows" [rows]="3" [columns]="2"></app-skeleton>
+  </div>
+} @else if (error()) {
+  <div class="panel">
+    <app-error-state title="Không thể tải dữ liệu bồn bể" [message]="error()" (retry)="load()"></app-error-state>
+  </div>
+} @else if (tanks().length === 0) {
+  <div class="panel">
+    <app-empty-state title="Chưa có dữ liệu bồn." message="Dữ liệu tồn kho sẽ hiển thị khi có bồn được cấu hình."></app-empty-state>
+  </div>
+} @else {
+  <div class="panel">
+    @for (tank of tanks(); track tank.id) {
+      <app-tank-level [name]="tank.name" [fuelName]="tank.fuelName" [currentLiters]="tank.estimatedVolumeLiters"></app-tank-level>
+    }
+  </div>
+}

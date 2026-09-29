@@ -1,0 +1,59 @@
+{
+  "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
+  "version": 1,
+  "newProjectRoot": "projects",
+  "projects": {
+    "gas-station": {
+      "projectType": "application",
+      "root": "",
+      "sourceRoot": "src",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:application",
+          "options": {
+            "browser": "src/main.ts",
+            "tsConfig": "tsconfig.app.json",
+            "assets": [
+              {
+                "glob": "**/*",
+                "input": "public"
+              }
+            ],
+            "styles": [
+              "src/styles.scss"
+            ]
+          },
+          "configurations": {
+            "production": {},
+            "development": {
+              "optimization": false,
+              "sourceMap": true,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.development.ts"
+                }
+              ]
+            }
+          },
+          "defaultConfiguration": "production"
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "configurations": {
+            "development": {
+              "buildTarget": "gas-station:build:development"
+            },
+            "production": {
+              "buildTarget": "gas-station:build:production"
+            }
+          },
+          "defaultConfiguration": "development"
+        }
+      }
+    }
+  },
+  "cli": {
+    "analytics": "8ee4a23b-1fbe-40e1-8837-5071547fe09e"
+  }
+}
