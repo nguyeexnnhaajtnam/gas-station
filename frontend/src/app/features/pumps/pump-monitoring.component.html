@@ -1,0 +1,65 @@
+<app-page-header eyebrow="Vận hành" title="Theo dõi trụ bơm" subtitle="Trạng thái vận hành theo thời gian thực">
+  <div actions class="head-actions">
+    <div><small>Trạm</small><b>{{ context.selectedStation()?.name || 'Chưa chọn' }}</b></div>
+    <div><small>Cập nhật lần cuối</small><b>{{ updated() ? (updated() | date:'HH:mm:ss') : '—' }}</b></div>
+    <button class="btn btn-secondary" [disabled]="loading()" (click)="load()">
+      <svg lucideRefreshCw [size]="16" [class.spin]="loading()"></svg>Làm mới
+    </button>
+  </div>
+</app-page-header>
+
+<section class="toolbar">
+  <app-search-field placeholder="Tìm mã trụ, tên trụ hoặc nhiên liệu…" [value]="query()" (queryChange)="query.set($event)"></app-search-field>
+  <div class="filters">
+    @for (item of filters; track item[0]) {
+      <button [class.active]="filter() === item[0]" (click)="filter.set(item[0])">{{ item[1] }}</button>
+    }
+  </div>
+</section>
+
+<section class="summary">
+  <article><span>Tổng số trụ</span><b>{{ pumps().length }}</b></article>
+  <article><span>Online</span><b class="ok">{{ online() }}</b></article>
+  <article><span>Offline</span><b class="bad">{{ offline() }}</b></article>
+  <article><span>Đang bơm</span><b class="hot">{{ dispensing() }}</b></article>
+</section>
+
+@if (loading()) {
+  <div class="state"><app-skeleton type="rows" [rows]="3" [columns]="3"></app-skeleton></div>
+} @else if (error()) {
+  <div class="state"><app-error-state title="Không thể tải dữ liệu trụ bơm" [message]="error()" (retry)="load()"></app-error-state></div>
+} @else if (!pumps().length) {
+  <div class="state"><app-empty-state title="Chưa có dữ liệu trụ bơm" message="Các trụ sẽ xuất hiện khi trạm gửi dữ liệu vận hành."></app-empty-state></div>
+} @else if (!visible().length) {
+  <div class="state"><app-empty-state title="Không tìm thấy trụ phù hợp" message="Thử thay đổi từ khóa hoặc bộ lọc."></app-empty-state></div>
+} @else {
+  <section class="grid">
+    @for (pump of visible(); track pump.id) {
+      <article class="card" [class.offline]="pump.connectionStatus === 'OFFLINE'" [class.live-card]="pump.operationalStatus === 'FUELING'">
+        <header>
+          <h2>{{ pump.number }}</h2>
+          <span class="fuel">{{ pump.fuelType }}</span>
+        </header>
+
+        <dl>
+          <div><dt>Tiền</dt><dd>{{ pump.money == null ? '—' : (pump.money | number:'1.0-0') + ' ₫' }}</dd></div>
+          <div><dt>Lít</dt><dd>{{ pump.liters == null ? '—' : (pump.liters | number:'1.2-2') + ' L' }}</dd></div>
+          <div><dt>Giá</dt><dd>{{ pump.unitPrice == null ? '—' : (pump.unitPrice | number:'1.0-0') + ' ₫' }}</dd></div>
+          <div><dt>Total</dt><dd>{{ pump.totalizer == null ? '—' : (pump.totalizer | number:'1.2-2') + ' L' }}</dd></div>
+        </dl>
+
+        <footer>
+          <span class="state-icon connection" [class.on]="pump.connectionStatus === 'ONLINE'" [title]="connectionLabel(pump)">
+            @if (pump.connectionStatus === 'ONLINE') { <svg lucideWifi [size]="22"></svg> }
+            @else { <svg lucideWifiOff [size]="22"></svg> }
+            <small>{{ connectionLabel(pump) }}</small>
+          </span>
+          <span class="state-icon operation" [class.dispensing]="pump.operationalStatus === 'FUELING'" [title]="statusLabel(pump)">
+            <svg lucideFuel [size]="22"></svg>
+            <small>{{ statusLabel(pump) }}</small>
+          </span>
+        </footer>
+      </article>
+    }
+  </section>
+}

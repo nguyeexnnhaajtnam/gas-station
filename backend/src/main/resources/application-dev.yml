@@ -15,3 +15,10 @@ spring:
 app:
   data-source: ${APP_DATA_SOURCE:seenpro}
   cors-origins: ${CORS_ORIGINS:http://localhost:4200}
+
+logging:
+  level:
+    vn.gasstation.auth: DEBUG
+    vn.gasstation.company: DEBUG
+    vn.gasstation.station: DEBUG
+    vn.gasstation.integration.seenpro: DEBUG

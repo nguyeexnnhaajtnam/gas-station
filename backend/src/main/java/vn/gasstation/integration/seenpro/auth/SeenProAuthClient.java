@@ -5,7 +5,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.gasstation.integration.seenpro.SeenProProperties;
 import vn.gasstation.integration.seenpro.client.LegacySystemUnavailableException;
+import vn.gasstation.integration.seenpro.client.SeenProNavigationDiagnostics;
 import vn.gasstation.integration.seenpro.session.SeenProSessionManager;
+import vn.gasstation.infrastructure.logging.RequestLogContext;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.URLEncoder;
@@ -17,11 +19,14 @@ public class SeenProAuthClient {
     private final SeenProProperties properties;
     private final SeenProSessionManager sessions;
     private final SeenProAuthMapper mapper;
+    private final SeenProNavigationDiagnostics diagnostics;
 
-    public SeenProAuthClient(SeenProProperties properties, SeenProSessionManager sessions, SeenProAuthMapper mapper) {
+    public SeenProAuthClient(SeenProProperties properties, SeenProSessionManager sessions, SeenProAuthMapper mapper,
+                             SeenProNavigationDiagnostics diagnostics) {
         this.properties = properties;
         this.sessions = sessions;
         this.mapper = mapper;
+        this.diagnostics = diagnostics;
     }
 
     public SeenProAuthResponse authenticateAndFetchVerificationPage(String username, String password) {
@@ -38,11 +43,14 @@ public class SeenProAuthClient {
             .build();
         try {
             // The login response body/status is not used as proof of authentication.
+            var loginCookiesBefore = diagnostics.before(sessions);
             long loginStarted = System.nanoTime();
-            log.info("seenpro.request started method=POST path=/checklogin.php");
+            RequestLogContext.providerCall();
+            log.info("[SEENPRO] event=request provider=seenpro method=POST path=/checklogin.php stage=authentication");
             var loginResponse = sessions.client().send(loginRequest, HttpResponse.BodyHandlers.discarding());
-            log.info("seenpro.request completed method=POST path=/checklogin.php status={} durationMs={}",
-                loginResponse.statusCode(), (System.nanoTime()-loginStarted)/1_000_000);
+            long loginDurationMs = (System.nanoTime()-loginStarted)/1_000_000;
+            diagnostics.completed("POST", "/checklogin.php", loginResponse.statusCode(), loginResponse.headers(), null,
+                loginCookiesBefore, sessions, loginDurationMs);
 
             String account = URLEncoder.encode(username, StandardCharsets.UTF_8);
             var verificationRequest = HttpRequest.newBuilder(properties.baseUrl().resolve(
@@ -51,19 +59,28 @@ public class SeenProAuthClient {
                 .GET()
                 .build();
             long verificationStarted = System.nanoTime();
-            log.info("seenpro.request started method=GET path=/view.php purpose=authentication-verification");
+            var verificationCookiesBefore = diagnostics.before(sessions);
+            RequestLogContext.providerCall();
+            log.info("[SEENPRO] event=request provider=seenpro method=GET path=/view.php stage=authentication-verification");
             var response = sessions.client().send(verificationRequest,
                 HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-            log.info("seenpro.request completed method=GET path=/view.php purpose=authentication-verification status={} durationMs={} bodyChars={}",
-                response.statusCode(), (System.nanoTime()-verificationStarted)/1_000_000, response.body().length());
+            long verificationDurationMs = (System.nanoTime()-verificationStarted)/1_000_000;
+            diagnostics.completed("GET", "/view.php", response.statusCode(), response.headers(), response.body(),
+                verificationCookiesBefore, sessions, verificationDurationMs);
             return new SeenProAuthResponse(response.statusCode(), response.headers(), response.body());
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-            log.error("seenpro.authentication interrupted errorType={}", e.getClass().getSimpleName());
+            authenticationError("interrupted", e);
             throw new LegacySystemUnavailableException("Yêu cầu đăng nhập nguồn dữ liệu kế thừa bị gián đoạn", e);
         } catch (Exception e) {
-            log.error("seenpro.authentication failed errorType={}", e.getClass().getSimpleName());
+            authenticationError("request", e);
             throw new LegacySystemUnavailableException("Không thể kết nối nguồn dữ liệu kế thừa", e);
         }
+    }
+
+    private static void authenticationError(String stage, Exception error) {
+        RequestLogContext.warning();
+        log.error("[ERROR] event=provider.error provider=seenpro stage=authentication-{} errorCode=DATA_PROVIDER_UNAVAILABLE rootCause={} requestId={}",
+            stage, error.getClass().getSimpleName(), RequestLogContext.requestId());
     }
 }

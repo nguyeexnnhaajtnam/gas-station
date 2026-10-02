@@ -62,55 +62,31 @@ h1 {
   font-size: 13.5px;
 }
 
-.section {
-  margin-bottom: var(--space-6);
-  background: var(--surface);
-  padding: var(--space-4);
-}
+.connection { display:inline-flex;align-items:center;gap:7px;font-size:12px;color:var(--text-3); }
+.connection i { width:7px;height:7px;border-radius:50%;background:#d14343;box-shadow:0 0 0 3px #d1434318; }
+.connection.online { color:#087f5b; }
+.connection.online i { background:#12a378;box-shadow:0 0 0 3px #12a37818; }
+.dashboard-section { margin-top:var(--space-6); }
+.section-heading { display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:var(--space-4); }
+.section-heading h2 { margin:0;font-size:17px; }
+.section-heading p,.section-heading span { margin:4px 0 0;color:var(--text-3);font-size:12px; }
+.pump-grid { display:grid;grid-template-columns:repeat(auto-fill,minmax(245px,1fr));gap:var(--space-4); }
+.pump-card { padding:18px;border:1px solid var(--line-soft);border-radius:14px;background:var(--surface);box-shadow:0 8px 25px rgba(16,42,67,.05);transition:transform .2s ease,opacity .2s ease; }
+.pump-card:hover { transform:translateY(-2px); }
+.pump-card.offline { opacity:.62;background:#f7f8f9; }
+.pump-card.maintenance { border-color:#f1c36d;background:#fffaf0; }
+.pump-card header { display:flex;justify-content:space-between;gap:12px; }
+.pump-card header span,.pump-card header strong { display:block; }
+.pump-card header span { font-size:11px;font-weight:800;color:var(--text-3);letter-spacing:.08em; }
+.pump-card header strong { margin-top:4px;font-size:14px; }
+.pump-card header em { height:max-content;padding:4px 8px;border-radius:99px;background:#eef1f4;color:#687486;font-size:10px;font-style:normal;font-weight:800; }
+.pump-card header em.online { background:#e2f4ef;color:#087f5b; }
+.pump-money { margin:22px 0;font-size:27px;font-weight:750;letter-spacing:-.02em; }
+.pump-money small { font-size:13px;color:var(--text-3); }
+.pump-card dl { display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:0; }
+.pump-card dl div { min-width:0; }
+.pump-card dt { color:var(--text-3);font-size:10px;text-transform:uppercase; }
+.pump-card dd { margin:5px 0 0;font-size:12px;font-weight:700;overflow:hidden;text-overflow:ellipsis; }
+.pump-card footer { margin-top:16px;padding-top:12px;border-top:1px solid var(--line-soft);color:var(--text-3);font-size:11px; }
+.pump-empty { padding:34px;border:1px dashed var(--line-soft);border-radius:12px;background:var(--surface);color:var(--text-2);text-align:center;font-size:13px; }
 
-.two-col {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-  gap: var(--space-6);
-}
-
-.two-col .section {
-  margin-bottom: 0;
-}
-
-.segmented {
-  display: inline-flex;
-  border: 1px solid var(--line);
-  margin-bottom: var(--space-4);
-}
-
-.segmented button {
-  padding: 6px var(--space-3);
-  border: 0;
-  background: transparent;
-  font-size: 13px;
-  color: var(--text-2);
-  border-right: 1px solid var(--line);
-}
-
-.segmented button:last-child {
-  border-right: 0;
-}
-
-.segmented button.active {
-  background: var(--text);
-  color: var(--surface);
-}
-
-.chart-area {
-  height: 240px;
-  display: flex;
-  align-items: flex-start;
-  padding: var(--space-4);
-  background-image: repeating-linear-gradient(to bottom, var(--line-soft) 0, var(--line-soft) 1px, transparent 1px, transparent 48px);
-}
-
-.chart-area p {
-  font-size: 13.5px;
-  color: var(--text-2);
-}

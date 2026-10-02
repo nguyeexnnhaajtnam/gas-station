@@ -36,4 +36,10 @@ Flyway hiện chỉ quản lý user, role và audit của hệ thống mới. Kh
 
 ## Realtime tương lai
 
-`PumpLiveState` là hợp đồng trung lập. Polling SeenPro chưa được triển khai vì payload chưa xác nhận. Đường đi mục tiêu là gateway → MQTT broker → Spring Boot → SSE/WebSocket → Angular; frontend không phụ thuộc payload polling cũ.
+`PumpRealtime` và `PumpRealtimeProvider` là hợp đồng trung lập. `OnlineAggregator` lấy một snapshot từ provider, cache ngắn hạn và đưa vào duy nhất Dashboard response. Angular không gọi các endpoint polling legacy.
+
+SeenPro adapter phải bootstrap từ `online.php` và JavaScript cùng trang để tạo `PumpDescriptor` trước khi polling. Descriptor chứa `maCot`, tên trụ, `maNhienLieu`, `standardizedMAC`, `master`, `slave`, `user` và các identifier bổ sung đã được xác nhận. Không identifier nào được hardcode hoặc suy ra theo thứ tự trụ.
+
+Hiện repo chưa có fixture `online.php`/JavaScript hay capture request polling. Bootstrap parser vì vậy fail-fast và báo chính xác identifier thiếu. `SeenProOnlineClient` nhận `PumpDescriptor` nhưng chưa phát request tới `gettienhome.php`, `getlithome.php`, `getgiahome.php`, `gettotal.php`, `getconnectstate.php`, `getpumpstate.php` cho đến khi xác nhận HTTP method, parameter mapping và response correlation key. Dashboard nhận partial state thay vì dữ liệu suy đoán.
+
+Đường đi mục tiêu là gateway → MQTT broker → `MqttPumpRealtimeProvider` → `OnlineAggregator` → Dashboard. Việc thay SeenPro bằng MQTT không thay Dashboard service, REST contract hoặc Angular component.

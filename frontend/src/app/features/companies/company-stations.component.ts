@@ -10,6 +10,8 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
+import { BrandTopbarComponent } from '../../shared/components/brand-topbar/brand-topbar.component';
+import { ToastHostComponent } from '../../shared/components/toast-host/toast-host.component';
 import { StationActivationService } from '../../shared/services/station-activation.service';
 import { ToastService } from '../../shared/services/toast.service';
 import { initials, stationShortName } from '../../shared/utils/station-name';
@@ -19,6 +21,8 @@ import { LucideLoaderCircle, LucideCircleAlert, LucideX, LucideArrowRight } from
   standalone: true,
   imports: [
     RouterLink,
+    BrandTopbarComponent,
+    ToastHostComponent,
     PageHeaderComponent,
     SearchFieldComponent,
     EmptyStateComponent,

@@ -29,7 +29,7 @@ public class SeenProStationParser {
             stations.add(new SeenProStationModel(account, name, text(row, ".dienThoai"),
                 email(row), href(view), href(manage)));
         }
-        log.info("seenpro.station.parse completed rows={} skipped={}", stations.size(), skipped);
+        log.debug("[SEENPRO] event=parser.result provider=seenpro parser=station count={} skipped={}", stations.size(), skipped);
         return List.copyOf(stations);
     }
 

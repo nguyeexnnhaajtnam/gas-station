@@ -84,6 +84,24 @@ Mỗi nguồn được cô lập. Một parser chưa hoàn thiện không làm `
 
 Hiện tại `quanlycuahang.php` chỉ được dùng để xác nhận context/page có thể truy cập và `quanlygia.php` xác nhận source availability. Các metric báo cáo, tank và transaction vẫn cần fixture HTML đã làm sạch trước khi viết parser. `theodoibanhang.php` đặc biệt không được Dashboard gọi cho đến khi parser được xác nhận.
 
+## Online bootstrap
+
+```text
+online.php + referenced JavaScript
+  → SeenProOnlineBootstrapProvider
+  → PumpDescriptor list
+  → SeenProOnlineClient
+  → polling endpoints
+  → SeenProPumpRealtimeMapper
+  → OnlineAggregator
+  → PumpRealtime
+  → Dashboard
+```
+
+Bootstrap chỉ tạo descriptor khi các identifier bắt buộc xuất hiện trong cùng một object pump: `maCot`, `pumpName`, `maNhienLieu`, `standardizedMAC`, `master`, `slave`, `user`. Không ghép identifier từ các object khác nhau và không suy luận theo vị trí.
+
+Polling đang fail-fast trước network call vì còn thiếu capture xác nhận `pollingHttpMethod`, `pollingParameterMapping` và `pollingResponseCorrelationKey`. Cần cung cấp sanitized HTML của `online.php`, toàn bộ JavaScript cùng origin được trang tham chiếu, và một request/response mẫu cho mỗi polling endpoint. Không gửi cookie, credential hoặc dữ liệu khách hàng thật.
+
 ## Trace còn cần
 
 1. Fixture đăng nhập thất bại và response khi session hết hạn để hoàn tất phân loại `REJECTED`/expiry.

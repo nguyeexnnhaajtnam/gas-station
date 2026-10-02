@@ -2,6 +2,8 @@ package vn.gasstation.station.application;
 
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import vn.gasstation.company.application.CompanyService;
 import vn.gasstation.station.domain.Station;
 import java.util.List;
@@ -9,6 +11,7 @@ import java.util.Optional;
 
 @Service
 public class StationService {
+    private static final Logger log = LoggerFactory.getLogger(StationService.class);
     private final StationProvider provider;
     private final CompanyService companies;
     private final StationContextActivator contextActivator;
@@ -25,6 +28,8 @@ public class StationService {
     }
 
     public Optional<Station> activate(String stationId) {
+        log.debug("[BUSINESS] event=station.select.dispatch stationId={} provider={}",
+            stationId, contextActivator.getClass().getSimpleName());
         return contextActivator.activate(stationId);
     }
 }

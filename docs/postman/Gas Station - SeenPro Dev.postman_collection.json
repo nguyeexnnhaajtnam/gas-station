@@ -1,0 +1,115 @@
+{
+  "info": {
+    "_postman_id": "85fa3a8c-b8e1-4db0-93f0-ec4c465f3c01",
+    "name": "Gas Station - SeenPro Dev",
+    "description": "Chạy theo thứ tự: login -> companies -> stations -> select station -> Online Dev Explorer. Không lưu SeenPro credentials trong collection.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if (!pm.environment.get('baseUrl')) { pm.environment.set('baseUrl', 'http://localhost:8080'); }"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Login",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"{{seenproUsername}}\",\n  \"password\": \"{{seenproPassword}}\"\n}"
+        },
+        "url": "{{baseUrl}}/api/v1/auth/login",
+        "description": "Credentials được nhập trong Postman environment. Backend tạo và giữ PHPSESSID; collection không nhận cookie SeenPro."
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Login returns 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "pm.test('SeenPro authenticated', () => pm.expect(json.status).to.eql('AUTHENTICATED'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "2. Get Companies",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/companies" },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Companies returns 200', () => pm.response.to.have.status(200));",
+            "const items = pm.response.json().items || [];",
+            "pm.test('At least one company exists', () => pm.expect(items.length).to.be.above(0));",
+            "if (items.length) pm.environment.set('companyId', items[0].id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "3. Get Stations",
+      "request": { "method": "GET", "url": "{{baseUrl}}/api/v1/companies/{{companyId}}/stations" },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Stations returns 200', () => pm.response.to.have.status(200));",
+            "const items = pm.response.json().items || [];",
+            "pm.test('At least one station exists', () => pm.expect(items.length).to.be.above(0));",
+            "if (items.length) pm.environment.set('stationId', items[0].id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "4. Select Station",
+      "request": {
+        "method": "POST",
+        "url": "{{baseUrl}}/api/v1/stations/{{stationId}}/select",
+        "description": "Kích hoạt station context trong cùng SeenProSessionManager, sau đó replay menu.php -> quanlycuahang.php -> online.php."
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Station selected', () => pm.response.to.have.status(200));"]
+        }
+      }]
+    },
+    {
+      "name": "5. Explore Online Scripts",
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/dev/seenpro/explorer/online-scripts",
+        "description": "Chỉ hoạt động ở Spring profile dev và tái sử dụng authenticated SeenPro session."
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Explorer returns 200', () => pm.response.to.have.status(200));",
+            "const json = pm.response.json();",
+            "pm.test('Explorer reports scripts', () => {",
+            "  pm.expect(json).to.have.property('seenProScripts');",
+            "  pm.expect(json).to.have.property('inlineScripts');",
+            "  pm.expect(json).to.have.property('ajaxEndpoints');",
+            "});"
+          ]
+        }
+      }]
+    }
+  ]
+}

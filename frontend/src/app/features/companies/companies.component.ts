@@ -10,12 +10,14 @@ import { EmptyStateComponent } from '../../shared/components/empty-state/empty-s
 import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
 import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
 import { StatusBadgeComponent, StatusTone } from '../../shared/components/status-badge/status-badge.component';
+import { BrandTopbarComponent } from '../../shared/components/brand-topbar/brand-topbar.component';
 import { initials } from '../../shared/utils/station-name';
 import { LucideEllipsis, LucideChevronRight, LucidePlus } from '../../shared/icons';
 
 @Component({
   standalone: true,
   imports: [
+    BrandTopbarComponent,
     PageHeaderComponent,
     SearchFieldComponent,
     EmptyStateComponent,

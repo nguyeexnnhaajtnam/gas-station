@@ -8,8 +8,12 @@ import vn.gasstation.dashboard.domain.PriceSnapshot;
 import vn.gasstation.dashboard.domain.ReportSnapshot;
 import vn.gasstation.dashboard.domain.StoreInfo;
 import vn.gasstation.shared.application.DataProviderUnavailableException;
+import vn.gasstation.pump.application.OnlineAggregator;
+import vn.gasstation.pump.domain.PumpRealtime;
+import vn.gasstation.pump.domain.PumpRealtimeSnapshot;
 import vn.gasstation.tank.application.TankProvider;
 import vn.gasstation.transaction.application.TransactionProvider;
+import vn.gasstation.infrastructure.logging.RequestLogContext;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -25,14 +29,16 @@ public class CompositeDashboardProvider implements DashboardProvider {
     private final TankProvider tanks;
     private final PriceProvider prices;
     private final TransactionProvider transactions;
+    private final OnlineAggregator online;
 
     public CompositeDashboardProvider(StoreInfoProvider stores, ReportProvider reports, TankProvider tanks,
-                                      PriceProvider prices, TransactionProvider transactions) {
+                                      PriceProvider prices, TransactionProvider transactions, OnlineAggregator online) {
         this.stores = stores;
         this.reports = reports;
         this.tanks = tanks;
         this.prices = prices;
         this.transactions = transactions;
+        this.online = online;
     }
 
     @Override
@@ -42,21 +48,31 @@ public class CompositeDashboardProvider implements DashboardProvider {
         Optional<ReportSnapshot> report = safely("REPORT", () -> reports.summary(from, to), unavailable).flatMap(value -> value);
         Optional<Integer> tankCount = safely("TANKS", () -> tanks.findAll().size(), unavailable);
         Optional<PriceSnapshot> price = safely("PRICES", prices::current, unavailable).flatMap(value -> value);
+        Optional<PumpRealtimeSnapshot> realtime = safely("ONLINE", online::currentSnapshot, unavailable);
+        if (realtime.isPresent() && !realtime.get().available()) unavailable.add("ONLINE");
 
         // TransactionProvider is intentionally not called until theodoibanhang.php has a confirmed parser fixture.
         // Keeping it as a composed dependency makes the future enrichment explicit without coupling current summary availability to it.
         if (transactions != null) unavailable.add("TRANSACTIONS");
 
-        return new DashboardSummary(
+        var summary = new DashboardSummary(
             report.map(ReportSnapshot::revenue).orElse(null),
             report.map(ReportSnapshot::litersSold).orElse(null),
             report.map(ReportSnapshot::transactionCount).orElse(null),
             tankCount.orElse(null),
+            realtime.filter(PumpRealtimeSnapshot::available)
+                .map(snapshot -> (int) snapshot.pumps().stream()
+                    .filter(pump -> pump.connectionStatus() == PumpRealtime.ConnectionStatus.ONLINE).count())
+                .orElse(null),
+            realtime.filter(PumpRealtimeSnapshot::available).map(PumpRealtimeSnapshot::pumps).orElse(List.of()),
             store.map(StoreInfo::contextAvailable).orElse(false),
             price.map(PriceSnapshot::sourceAvailable).orElse(false),
             !unavailable.isEmpty(),
             unavailable
         );
+        log.info("[BUSINESS] event=dashboard.summary.generated degraded={} unavailableSources={} pumpCount={}",
+            summary.partial(), unavailable.size(), summary.pumpOverview().size());
+        return summary;
     }
 
     private <T> Optional<T> safely(String source, Supplier<T> supplier, List<String> unavailable) {
@@ -66,7 +82,8 @@ public class CompositeDashboardProvider implements DashboardProvider {
             return Optional.ofNullable(value);
         } catch (DataProviderUnavailableException error) {
             unavailable.add(source);
-            log.warn("dashboard.source unavailable source={} errorType={}", source, error.getClass().getSimpleName());
+            RequestLogContext.warning();
+            log.warn("[BUSINESS] event=dashboard.source.unavailable source={} rootCause={}", source, error.getClass().getSimpleName());
             return Optional.empty();
         }
     }

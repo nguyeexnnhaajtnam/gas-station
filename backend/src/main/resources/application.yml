@@ -17,10 +17,10 @@ server:
 app:
   data-source: ${APP_DATA_SOURCE:seenpro}
   cors-origins: ${CORS_ORIGINS:http://localhost:4200}
+  realtime:
+    cache-ttl: ${REALTIME_CACHE_TTL:5s}
   seenpro:
     base-url: ${SEENPRO_BASE_URL:}
-    username: ${SEENPRO_USERNAME:}
-    password: ${SEENPRO_PASSWORD:}
     connect-timeout: 5s
     read-timeout: 15s
     realtime-poll-interval: 5s

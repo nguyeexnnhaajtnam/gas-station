@@ -9,8 +9,7 @@
   height: var(--topbar-height);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-4);
+  justify-content: flex-end;
   padding: 0 var(--space-7);
   background: var(--surface);
   border-bottom: 2px solid var(--line);
@@ -26,52 +25,4 @@
 .btn-icon {
   width: var(--control-h-icon);
   height: var(--control-h-icon);
-}
-
-.user-menu {
-  position: relative;
-}
-
-.avatar {
-  display: grid;
-  place-items: center;
-  width: 34px;
-  height: 34px;
-  border: 0;
-  background: var(--sidebar-line);
-  color: #fff;
-}
-
-.menu {
-  position: absolute;
-  top: calc(100% + 4px);
-  right: 0;
-  width: 200px;
-  background: var(--surface);
-  border: 1px solid var(--line);
-  box-shadow: var(--shadow-float);
-  z-index: 100;
-}
-
-.menu-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  width: 100%;
-  padding: var(--space-3);
-  border: 0;
-  border-bottom: 1px solid var(--line-soft);
-  background: transparent;
-  color: var(--text);
-  font-size: 13.5px;
-  text-align: left;
-  text-decoration: none;
-}
-
-.menu-item:last-child {
-  border-bottom: 0;
-}
-
-.menu-item:hover {
-  background: var(--surface-2);
 }

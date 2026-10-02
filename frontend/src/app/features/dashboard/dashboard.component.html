@@ -7,6 +7,10 @@
     </p>
   </div>
   <div class="header-actions">
+    @if (summary(); as current) {
+      <span class="connection" [class.online]="current.stationContextReady"><i></i>{{ current.stationContextReady ? 'Đã kết nối' : 'Mất kết nối' }}</span>
+    }
+    <span class="today">Cập nhật: {{ lastRefresh() ? (lastRefresh() | date: 'HH:mm:ss') : '—' }}</span>
     <span class="today">Hôm nay, {{ today | date: 'dd/MM/yyyy' }}</span>
     <button type="button" class="btn-icon" title="Làm mới" (click)="load()">
       <svg lucideRefreshCw [size]="16"></svg>
@@ -20,12 +24,6 @@
       <app-skeleton type="block" [height]="104"></app-skeleton>
     }
   </div>
-  <div class="section">
-    <app-skeleton type="block" [height]="220"></app-skeleton>
-  </div>
-  <div class="section">
-    <app-skeleton type="block" [height]="220"></app-skeleton>
-  </div>
 } @else if (error()) {
   <app-error-state title="Không thể tải dữ liệu tổng quan." (retry)="load()"></app-error-state>
 } @else if (summary(); as s) {
@@ -33,38 +31,28 @@
     <app-kpi-cell label="Doanh thu hôm nay" unit="₫" [value]="s.revenue" format="currency"></app-kpi-cell>
     <app-kpi-cell label="Sản lượng" unit="lít" [value]="s.litersSold" format="number"></app-kpi-cell>
     <app-kpi-cell label="Giao dịch" unit="lượt" [value]="s.transactionCount" format="integer"></app-kpi-cell>
-    <app-kpi-cell label="Trụ hoạt động" unit="trụ" [value]="null" format="integer"></app-kpi-cell>
+    <app-kpi-cell label="Trụ hoạt động" unit="trụ" [value]="s.onlinePumpCount" format="integer"></app-kpi-cell>
   </div>
+
+  <section class="dashboard-section">
+    <div class="section-heading"><div><h2>Trạng thái trụ bơm</h2><p>Dữ liệu realtime đã được backend tổng hợp</p></div><span>{{ s.pumpOverview.length }} trụ</span></div>
+    @if (s.pumpOverview.length) {
+      <div class="pump-grid">
+        @for (pump of s.pumpOverview; track pump.id) {
+          <article class="pump-card" [class.offline]="pump.connectionStatus==='OFFLINE'" [class.maintenance]="pump.operationalStatus==='MAINTENANCE'">
+            <header><div><span>TRỤ {{ pump.number }}</span><strong>{{ pump.fuelType || 'Chưa xác định' }}</strong></div><em [class.online]="pump.connectionStatus==='ONLINE'">{{ pump.connectionStatus==='ONLINE'?'Online':pump.connectionStatus==='OFFLINE'?'Offline':'Không rõ' }}</em></header>
+            <div class="pump-money">{{ pump.money===null?'—':(pump.money | number:'1.0-0') }} <small>₫</small></div>
+            <dl><div><dt>Số lít</dt><dd>{{ pump.liters===null?'—':(pump.liters | number:'1.2-2') }}</dd></div><div><dt>Đơn giá</dt><dd>{{ pump.unitPrice===null?'—':(pump.unitPrice | number:'1.0-0') }}</dd></div><div><dt>Vòi bơm</dt><dd>{{ pump.nozzleStatus }}</dd></div></dl>
+            <footer>{{ pump.observedAt | date:'HH:mm:ss' }}</footer>
+          </article>
+        }
+      </div>
+    } @else {
+      <div class="pump-empty">Dữ liệu Online chưa thể ánh xạ. Cần fixture payload đã làm sạch từ sáu endpoint realtime.</div>
+    }
+  </section>
 
   @if (s.partial) {
     <div class="notice">Một số nguồn dữ liệu chưa sẵn sàng. Dashboard vẫn hoạt động với dữ liệu đã xác minh.</div>
   }
-
-  <section class="section">
-    <app-section-header title="Tình trạng trụ bơm" linkLabel="Theo dõi trụ bơm" linkTo="/pumps"></app-section-header>
-    <app-empty-state title="Chưa có dữ liệu trụ bơm." message="Dữ liệu sẽ hiển thị khi hệ thống trụ bơm được kết nối." variant="inline"></app-empty-state>
-  </section>
-
-  <section class="section">
-    <app-section-header title="Doanh thu / Sản lượng"></app-section-header>
-    <div class="segmented">
-      <button type="button" [class.active]="range() === 'today'" (click)="range.set('today')">Hôm nay</button>
-      <button type="button" [class.active]="range() === '7d'" (click)="range.set('7d')">7 ngày</button>
-      <button type="button" [class.active]="range() === '30d'" (click)="range.set('30d')">30 ngày</button>
-    </div>
-    <div class="chart-area">
-      <p>Chưa có dữ liệu doanh thu và sản lượng.</p>
-    </div>
-  </section>
-
-  <div class="two-col">
-    <section class="section">
-      <app-section-header title="Cảnh báo"></app-section-header>
-      <app-empty-state title="Chưa có dữ liệu cảnh báo." message="Cảnh báo vận hành sẽ hiển thị tại đây khi phát sinh." variant="inline"></app-empty-state>
-    </section>
-    <section class="section">
-      <app-section-header title="Bồn nhiên liệu" linkLabel="Bồn bể" linkTo="/tanks"></app-section-header>
-      <app-empty-state title="Chưa có dữ liệu bồn." message="Dữ liệu tồn kho sẽ hiển thị khi có bồn được cấu hình." variant="inline"></app-empty-state>
-    </section>
-  </div>
 }

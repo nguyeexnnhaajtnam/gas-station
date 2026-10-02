@@ -29,7 +29,7 @@ public class SeenProCompanyParser {
             result.add(new SeenProCompanyModel(account, name, text(row, ".dienThoai"),
                 normalizedEmail(text(row, ".email")), navigation(row)));
         }
-        log.info("seenpro.company.parse completed rows={} skipped={}", result.size(), skipped);
+        log.debug("[SEENPRO] event=parser.result provider=seenpro parser=company count={} skipped={}", result.size(), skipped);
         return List.copyOf(result);
     }
 
