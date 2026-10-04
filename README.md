@@ -4,7 +4,7 @@ Foundation for a Vietnamese gas-station management application with an Angular f
 
 ## Local development (no Docker)
 
-Requirements: Java 21, Node.js 20+, and PostgreSQL installed locally. Create the development database once with a PostgreSQL administrator account:
+Requirements: Java 25, Node.js 20+, and PostgreSQL installed locally. Create the development database once with a PostgreSQL administrator account:
 
 ```sql
 CREATE USER gas_dev WITH PASSWORD '123';
@@ -34,7 +34,7 @@ Open `http://localhost:4200`. The Angular development build calls `http://localh
 
 ## Docker/PostgreSQL development
 
-Requirements: Java 21, Maven 3.9+, Node.js 20+, Docker.
+Requirements: Java 25, Maven 3.9+, Node.js 20+, Docker.
 
 1. Copy `.env.example` to `.env` and set local values. Do not commit it.
 2. Start PostgreSQL: `docker compose up -d postgres`.
