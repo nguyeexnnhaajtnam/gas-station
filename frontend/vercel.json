@@ -4,7 +4,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": "dist/gas-station/browser",
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://REPLACE-WITH-RENDER-SERVICE.onrender.com/api/:path*" },
+    { "source": "/api/:path*", "destination": "https://gas-station-backend-p2kq.onrender.com/api/:path*" },
     { "source": "/(.*)", "destination": "/index.html" }
   ]
 }

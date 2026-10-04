@@ -36,7 +36,7 @@ Secrets live only in Render's environment settings — never commit them.
 
 ## 3. Frontend on Vercel
 
-1. In `frontend/vercel.json`, replace `REPLACE-WITH-RENDER-SERVICE` with the Render service name; commit and push.
+1. In `frontend/vercel.json`, set the `/api` rewrite destination to the Render service URL; commit and push.
 2. vercel.com → **Add New → Project** → import the repo, **Root Directory = `frontend`**. Build settings come from `vercel.json`.
 3. Open `https://<your-app>.vercel.app` and log in.
 
