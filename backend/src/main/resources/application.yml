@@ -1,5 +1,6 @@
 spring:
   application.name: gas-station-backend
+  autoconfigure.exclude: org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration
   profiles.default: dev
   datasource:
     url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/gas_station}
@@ -17,6 +18,8 @@ server:
 app:
   data-source: ${APP_DATA_SOURCE:seenpro}
   cors-origins: ${CORS_ORIGINS:http://localhost:4200}
+  auth:
+    token-ttl: ${AUTH_TOKEN_TTL:12h}
   realtime:
     cache-ttl: ${REALTIME_CACHE_TTL:5s}
   seenpro:

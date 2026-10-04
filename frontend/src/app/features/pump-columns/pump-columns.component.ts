@@ -1,19 +1,37 @@
 import { DecimalPipe } from '@angular/common';
-import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { finalize } from 'rxjs';
 import { ApiService } from '../../core/api.service';
 import { PumpColumn } from '../../core/api.models';
 import { PageHeaderComponent } from '../../shared/components/page-header/page-header.component';
-import { DataListComponent, ListState } from '../../shared/ui/data-list.component';
-import { StatusTagComponent, TagTone } from '../../shared/ui/status-tag.component';
-import { LucideChevronDown } from '../../shared/icons';
+import { EmptyStateComponent } from '../../shared/components/empty-state/empty-state.component';
+import { ErrorStateComponent } from '../../shared/components/error-state/error-state.component';
+import { SkeletonComponent } from '../../shared/components/skeleton/skeleton.component';
+import { PanelComponent } from '../../shared/ui/panel.component';
+import { LucideChevronDown, LucideSearch, LucideWifi, LucideWifiOff } from '../../shared/icons';
 import { CONNECTION_LABELS } from '../../shared/utils/pump-view';
+import { fuelColor } from '../../shared/utils/fuel-color';
 
-const PAGE_SIZE = 20;
+const STRIP: Record<PumpColumn['connectionStatus'], string> = {
+  ONLINE: 'var(--color-success)',
+  OFFLINE: 'var(--color-accent)',
+  UNKNOWN: 'var(--color-neutral-600)',
+};
 
 @Component({
   standalone: true,
-  imports: [DecimalPipe, PageHeaderComponent, DataListComponent, StatusTagComponent, LucideChevronDown],
+  imports: [
+    DecimalPipe,
+    PageHeaderComponent,
+    EmptyStateComponent,
+    ErrorStateComponent,
+    SkeletonComponent,
+    PanelComponent,
+    LucideChevronDown,
+    LucideSearch,
+    LucideWifi,
+    LucideWifiOff,
+  ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './pump-columns.component.html',
   styleUrl: './pump-columns.component.scss',
@@ -29,33 +47,37 @@ export class PumpColumnsComponent {
   readonly query = signal('');
   readonly connection = signal<'' | PumpColumn['connectionStatus']>('');
   readonly fuel = signal('');
-  readonly page = signal(0);
 
   readonly fuels = computed(() => [...new Set(this.columns().map((c) => c.fuelType).filter(Boolean))]);
+  readonly onlineCount = computed(() => this.columns().filter((c) => c.connectionStatus === 'ONLINE').length);
 
   readonly filtered = computed(() => {
     const q = this.query().trim().toLocaleLowerCase('vi');
-    return this.columns().filter(
-      (c) =>
-        (!this.connection() || c.connectionStatus === this.connection()) &&
-        (!this.fuel() || c.fuelType === this.fuel()) &&
-        (!q || [c.id, c.name, c.fuelType, c.deviceAddress, c.serialNumber].some((v) => v?.toLocaleLowerCase('vi').includes(q))),
-    );
+    return this.columns()
+      .filter(
+        (c) =>
+          (!this.connection() || c.connectionStatus === this.connection()) &&
+          (!this.fuel() || c.fuelType === this.fuel()) &&
+          (!q || [c.id, c.name, c.fuelType, c.deviceAddress, c.serialNumber].some((v) => v?.toLocaleLowerCase('vi').includes(q))),
+      )
+      .map((c) => ({
+        ...c,
+        strip: STRIP[c.connectionStatus],
+        connColor: this.connLabels[c.connectionStatus].color,
+        connLabel: this.connLabels[c.connectionStatus].label,
+        // Readable status colors on the dark pump screen
+        screenText: c.connectionStatus === 'ONLINE' ? 'oklch(0.78 0.14 150)' : c.connectionStatus === 'OFFLINE' ? 'var(--color-accent-400)' : 'var(--color-neutral-400)',
+        fuelColor: fuelColor(c.fuelType),
+      }));
   });
-  readonly totalPages = computed(() => Math.max(1, Math.ceil(this.filtered().length / PAGE_SIZE)));
-  readonly paged = computed(() => this.filtered().slice(this.page() * PAGE_SIZE, (this.page() + 1) * PAGE_SIZE));
-  readonly state = computed<ListState>(() =>
-    this.loading() ? 'loading' : this.error() ? 'error' : this.filtered().length ? 'ready' : 'empty',
-  );
+
+  readonly countLabel = computed(() => {
+    const total = this.columns().length;
+    const shown = this.filtered().length;
+    return `${shown === total ? total : shown + ' / ' + total} cột bơm · ${this.onlineCount()} đang kết nối`;
+  });
 
   constructor() {
-    // Any filter change goes back to the first page.
-    effect(() => {
-      this.query();
-      this.connection();
-      this.fuel();
-      this.page.set(0);
-    });
     this.load();
   }
 
@@ -74,7 +96,9 @@ export class PumpColumnsComponent {
       });
   }
 
-  tone(status: PumpColumn['connectionStatus']): TagTone {
-    return status === 'ONLINE' ? 'success' : status === 'OFFLINE' ? 'danger' : 'neutral';
+  clearFilters() {
+    this.query.set('');
+    this.connection.set('');
+    this.fuel.set('');
   }
 }
