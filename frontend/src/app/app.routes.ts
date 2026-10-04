@@ -31,11 +31,6 @@ export const routes: Routes = [
         canActivate: [stationGuard],
       },
       {
-        path: 'transactions',
-        loadComponent: () => import('./features/transactions/transactions.component').then((m) => m.TransactionsComponent),
-        canActivate: [stationGuard],
-      },
-      {
         path: 'tanks',
         loadComponent: () => import('./features/tanks/tanks.component').then((m) => m.TanksComponent),
         canActivate: [stationGuard],
@@ -46,13 +41,27 @@ export const routes: Routes = [
         path: 'pumps',
         loadComponent: () => import('./features/pumps/pump-monitoring.component').then((m) => m.PumpMonitoringComponent),
         canActivate: [stationGuard],
-        data: { eyebrow: 'Vận hành', title: 'Theo dõi trụ bơm', subtitle: 'Tình trạng và sản lượng theo từng trụ bơm.' },
+        data: { eyebrow: 'Vận hành', title: 'Theo dõi online', subtitle: 'Tình trạng và sản lượng theo từng trụ bơm.' },
+      },
+      {
+        path: 'pump-codes',
+        loadComponent: () => import('./features/pump-codes/pump-code-history.component').then((m) => m.PumpCodeHistoryComponent),
+        canActivate: [stationGuard],
+      },
+      {
+        path: 'pump-columns',
+        loadComponent: () => import('./features/pump-columns/pump-columns.component').then((m) => m.PumpColumnsComponent),
+        canActivate: [stationGuard],
+      },
+      {
+        path: 'store-info',
+        loadComponent: () => import('./features/store-info/store-info.component').then((m) => m.StoreInfoComponent),
+        canActivate: [stationGuard],
       },
       {
         path: 'shifts',
-        loadComponent: () => import('./features/misc/coming-soon.component').then((m) => m.ComingSoonComponent),
-        canActivate: [stationGuard],
-        data: { eyebrow: 'Vận hành', title: 'Ca bán hàng', subtitle: 'Quản lý ca làm việc và đối soát doanh thu.' },
+        redirectTo: 'dashboard',
+        pathMatch: 'full',
       },
       {
         path: 'fuel-inventory',
@@ -62,15 +71,13 @@ export const routes: Routes = [
       },
       {
         path: 'fuel-prices',
-        loadComponent: () => import('./features/misc/coming-soon.component').then((m) => m.ComingSoonComponent),
+        loadComponent: () => import('./features/fuel-prices/fuel-prices.component').then((m) => m.FuelPricesComponent),
         canActivate: [stationGuard],
-        data: { eyebrow: 'Nhiên liệu', title: 'Giá nhiên liệu', subtitle: 'Bảng giá bán theo từng loại nhiên liệu.' },
       },
       {
         path: 'customers',
-        loadComponent: () => import('./features/misc/coming-soon.component').then((m) => m.ComingSoonComponent),
+        loadComponent: () => import('./features/customers/customers.component').then((m) => m.CustomersComponent),
         canActivate: [stationGuard],
-        data: { eyebrow: 'Kinh doanh', title: 'Khách hàng', subtitle: 'Danh sách khách hàng và hợp đồng cấp nhiên liệu.' },
       },
       {
         path: 'fuel-supply',
@@ -92,9 +99,8 @@ export const routes: Routes = [
       },
       {
         path: 'reports',
-        loadComponent: () => import('./features/misc/coming-soon.component').then((m) => m.ComingSoonComponent),
+        loadComponent: () => import('./features/reports/revenue-report.component').then((m) => m.RevenueReportComponent),
         canActivate: [stationGuard],
-        data: { eyebrow: 'Báo cáo', title: 'Báo cáo', subtitle: 'Báo cáo vận hành và kinh doanh theo kỳ.' },
       },
       {
         path: 'users',

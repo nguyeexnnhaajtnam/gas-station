@@ -268,6 +268,19 @@ import { LucideBuilding, LucideChevronDown, LucideCheck, LucideFuel, LucideLoade
         max-width: 170px;
       }
     }
+
+    /* Tablet / mobile: drop the company segment, station takes the full width */
+    @media (max-width: 819px) {
+      .segment:first-child {
+        display: none;
+      }
+
+      .segment {
+        flex: 1;
+        max-width: none;
+        min-width: 0;
+      }
+    }
   `,
 })
 export class ContextSwitcherComponent {

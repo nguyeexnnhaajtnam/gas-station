@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 import vn.gasstation.integration.seenpro.SeenProProperties;
 import vn.gasstation.integration.seenpro.client.LegacySystemUnavailableException;
 import vn.gasstation.integration.seenpro.client.SeenProNavigationDiagnostics;
+import vn.gasstation.integration.seenpro.debug.SeenProHtmlCapture;
 import vn.gasstation.integration.seenpro.session.SeenProSessionManager;
 import vn.gasstation.infrastructure.logging.RequestLogContext;
 import java.net.http.HttpRequest;
@@ -20,13 +21,15 @@ public class SeenProAuthClient {
     private final SeenProSessionManager sessions;
     private final SeenProAuthMapper mapper;
     private final SeenProNavigationDiagnostics diagnostics;
+    private final SeenProHtmlCapture htmlCapture;
 
     public SeenProAuthClient(SeenProProperties properties, SeenProSessionManager sessions, SeenProAuthMapper mapper,
-                             SeenProNavigationDiagnostics diagnostics) {
+                             SeenProNavigationDiagnostics diagnostics, SeenProHtmlCapture htmlCapture) {
         this.properties = properties;
         this.sessions = sessions;
         this.mapper = mapper;
         this.diagnostics = diagnostics;
+        this.htmlCapture = htmlCapture;
     }
 
     public SeenProAuthResponse authenticateAndFetchVerificationPage(String username, String password) {
@@ -47,9 +50,11 @@ public class SeenProAuthClient {
             long loginStarted = System.nanoTime();
             RequestLogContext.providerCall();
             log.info("[SEENPRO] event=request provider=seenpro method=POST path=/checklogin.php stage=authentication");
-            var loginResponse = sessions.client().send(loginRequest, HttpResponse.BodyHandlers.discarding());
+            var loginResponse = sessions.client().send(loginRequest,
+                HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            htmlCapture.capture("checklogin.php", loginResponse.headers(), loginResponse.body());
             long loginDurationMs = (System.nanoTime()-loginStarted)/1_000_000;
-            diagnostics.completed("POST", "/checklogin.php", loginResponse.statusCode(), loginResponse.headers(), null,
+            diagnostics.completed("POST", "/checklogin.php", loginResponse.statusCode(), loginResponse.headers(), loginResponse.body(),
                 loginCookiesBefore, sessions, loginDurationMs);
 
             String account = URLEncoder.encode(username, StandardCharsets.UTF_8);
@@ -64,6 +69,7 @@ public class SeenProAuthClient {
             log.info("[SEENPRO] event=request provider=seenpro method=GET path=/view.php stage=authentication-verification");
             var response = sessions.client().send(verificationRequest,
                 HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            htmlCapture.capture("view.php", response.headers(), response.body());
             long verificationDurationMs = (System.nanoTime()-verificationStarted)/1_000_000;
             diagnostics.completed("GET", "/view.php", response.statusCode(), response.headers(), response.body(),
                 verificationCookiesBefore, sessions, verificationDurationMs);

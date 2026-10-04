@@ -19,13 +19,41 @@
   --sidebar-text: #d7d3d3;
   --sidebar-text-muted: #bab6b6;
   --sidebar-group-label: #9b9797;
-  --success: #2e7d4f;
+  --success: oklch(0.56 0.13 150);
   --warning: #a15c00;
   --danger: #ae1800;
   --unknown: #9b9797;
   --error-bg: #fff2ef;
   --error-border: #ffc4b8;
   --error-text: #7c1405;
+
+  // Modernist ramps (Station Console handoff)
+  --color-bg: #f3f2f2;
+  --color-text: #201e1d;
+  --color-accent: #ec3013;
+  --color-divider: rgba(32, 30, 29, .40);
+  --color-neutral-100: #f8f4f4;
+  --color-neutral-200: #eae7e7;
+  --color-neutral-300: #d7d3d3;
+  --color-neutral-400: #bab6b6;
+  --color-neutral-500: #9b9797;
+  --color-neutral-600: #7d7979;
+  --color-neutral-700: #605d5d;
+  --color-neutral-800: #444141;
+  --color-neutral-900: #2d2b2b;
+  --color-accent-100: #fff2ef;
+  --color-accent-200: #ffe0d9;
+  --color-accent-300: #ffc4b8;
+  --color-accent-400: #ff9783;
+  --color-accent-500: #ff563c;
+  --color-accent-600: #dd2b0f;
+  --color-accent-700: #ae1800;
+  --color-accent-800: #7c1405;
+  --color-accent-900: #4d170e;
+  --color-success: oklch(0.56 0.13 150);
+  --color-success-bg: oklch(0.94 0.04 150);
+  --color-success-text: oklch(0.42 0.11 150);
+  --font-mono: ui-monospace, Menlo, Consolas, monospace;
 
   // Type
   --font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
@@ -44,7 +72,7 @@
   --shadow-float: 0 12px 32px rgba(45, 43, 43, .22);
 
   // Layout dimensions
-  --sidebar-width: 248px;
+  --sidebar-width: 232px;
   --sidebar-width-collapsed: 64px;
   --topbar-height: 56px;
 
@@ -281,4 +309,261 @@ a {
   100% {
     opacity: 1;
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Station Console primitives (shared by every station screen)
+// ─────────────────────────────────────────────────────────────────────────────
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+}
+
+.page-stack {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-5);
+}
+
+// 2fr / 1fr rows (Tổng quan, Báo cáo); one column under 1100px
+.split-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+  gap: var(--space-5);
+  align-items: stretch;
+}
+
+@media (max-width: 1099px) {
+  .split-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+.card-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(380px, 100%), 1fr));
+  gap: var(--space-5);
+}
+
+// "Cần xử lý" / warning strip
+.alert-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2) var(--space-4);
+  flex-wrap: wrap;
+  padding: 10px var(--space-4);
+  background: var(--color-accent-100);
+  border-top: 2px solid var(--color-accent);
+  color: var(--color-accent-800);
+}
+
+.alert-strip .alert-title {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: 700;
+}
+
+.alert-strip a {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent-800);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.alert-strip .alert-body {
+  display: flex;
+  flex-direction: column;
+}
+
+.alert-strip .alert-body span:last-child {
+  font-size: 13px;
+}
+
+// Search box used inside toolbars
+.search-box {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  height: var(--control-h-md);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-neutral-400);
+  background: var(--color-bg);
+  flex: 1 1 260px;
+  max-width: 380px;
+  color: var(--color-neutral-600);
+}
+
+.search-box:focus-within {
+  border-color: var(--color-text);
+}
+
+.search-box input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  font-size: 13.5px;
+  color: var(--color-text);
+}
+
+// Filter button: "Nhãn **Giá trị** ⌄". A transparent native <select> or the
+// popover trigger sits on top, so the control stays keyboard accessible.
+.filter-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--control-h-md);
+  padding: 0 var(--space-3);
+  border: 1px solid var(--color-neutral-400);
+  background: var(--color-bg);
+  font-size: 13px;
+  color: var(--color-text);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.filter-btn:hover,
+.filter-btn:focus-within,
+.filter-btn.open {
+  border-color: var(--color-text);
+}
+
+.filter-btn .filter-label {
+  color: var(--color-neutral-700);
+}
+
+.filter-btn b {
+  font-weight: 600;
+}
+
+.filter-btn select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.filter-btn input[type='date'] {
+  border: 0;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+  outline: 0;
+  padding: 0;
+}
+
+// Standard list table (Mã bơm / Cột bơm / Khách hàng / Báo cáo chi tiết)
+.dl-scroll {
+  overflow-x: auto;
+}
+
+.dl-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.dl-table th {
+  padding: 10px var(--space-4);
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-neutral-700);
+  text-align: left;
+  white-space: nowrap;
+  border-bottom: 2px solid var(--color-text);
+}
+
+.dl-table td {
+  height: 52px;
+  padding: 8px var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-300);
+  vertical-align: middle;
+}
+
+.dl-table tbody tr:hover {
+  background: var(--color-neutral-200);
+}
+
+.dl-table .num {
+  text-align: right;
+  white-space: nowrap;
+}
+
+.dl-table .nowrap {
+  white-space: nowrap;
+}
+
+.dl-table .muted {
+  color: var(--color-neutral-600);
+}
+
+.dl-table .cell-main {
+  display: block;
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.dl-table .cell-sub {
+  display: block;
+  font-size: 12px;
+  color: var(--color-neutral-600);
+  line-height: 1.3;
+}
+
+// Simple square swatch for fuel colors
+.swatch {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  flex: none;
+}
+
+@keyframes live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: .35; }
+}
+
+.pulse {
+  animation: live-pulse 1.2s ease-in-out infinite;
+}
+
+// Fields inside filter popovers
+.pop-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--color-neutral-700);
+}
+
+.pop-field input,
+.pop-field select {
+  height: var(--control-h-md);
+  padding: 0 10px;
+  border: 1px solid var(--color-neutral-400);
+  background: var(--color-bg);
+  font-size: 13.5px;
+  color: var(--color-text);
+}
+
+.pop-field input:focus {
+  outline: 0;
+  border-color: var(--color-text);
+}
+
+.pop-actions {
+  display: flex;
+  gap: var(--space-2);
+}
+
+.pop-actions .btn {
+  height: var(--control-h-md);
 }

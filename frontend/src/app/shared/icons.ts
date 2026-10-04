@@ -41,4 +41,11 @@ export {
   LucideFolderOpen,
   LucideTrendingUp,
   LucideConstruction,
+  LucideActivity,
+  LucideBarcode,
+  LucideCylinder,
+  LucideCalendarClock,
+  LucideStore,
+  LucideChartColumn,
+  LucideMenu,
 } from '@lucide/angular';

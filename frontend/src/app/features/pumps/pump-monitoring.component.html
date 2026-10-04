@@ -1,156 +1,73 @@
-<div class="head-row">
-  <div class="titles">
-    <h1>Theo dõi trụ bơm</h1>
-    <p>{{ pumps().length }} trụ bơm · dữ liệu realtime từ bộ điều khiển trạm</p>
-  </div>
-  <div class="head-actions">
-    <div class="live" [class.paused]="!live()">
-      <span class="dot"></span>
-      <span class="label-full">{{ live() ? 'Đang cập nhật trực tiếp' : 'Tạm dừng cập nhật' }}</span>
-      <span class="label-short">{{ live() ? 'Trực tiếp' : 'Tạm dừng' }}</span>
-      <span class="clock num">{{ now() | date:'HH:mm:ss' }}</span>
+<app-page-header
+  eyebrow="Vận hành"
+  title="Theo dõi online"
+  [subtitle]="pumps().length + ' trụ bơm · dữ liệu realtime từ bộ điều khiển trạm'"
+  [status]="error() ? 'paused' : 'live'"
+  [time]="error() ? updated() : now()"
+  [showRefresh]="true"
+  [refreshing]="refreshing()"
+  (refresh)="load()"
+></app-page-header>
+
+<div class="page-stack">
+  @if (loading()) {
+    <div class="grid">
+      @for (s of [1, 2, 3, 4, 5, 6]; track s) {
+        <div class="skeleton"><i class="cap"></i><i class="body"></i><i class="base"></i></div>
+      }
     </div>
-    <button class="btn btn-secondary" [disabled]="loading()" (click)="load()">
-      <svg lucideRefreshCw [size]="16" [class.spin]="loading()"></svg>Làm mới
-    </button>
-  </div>
-</div>
-
-<div class="kpi-strip">
-  <button type="button" [class.active]="filter() === 'ALL'" (click)="filter.set('ALL')">
-    <span class="label"><span class="dot" style="background:var(--text)"></span>Tất cả trụ</span>
-    <span class="value num">{{ counts().all }}</span>
-  </button>
-  <button type="button" [class.active]="filter() === 'PUMPING'" (click)="filter.set('PUMPING')">
-    <span class="label"><span class="dot" style="background:var(--success)"></span>Đang bơm</span>
-    <span class="value num">{{ counts().PUMPING }}</span>
-  </button>
-  <button type="button" [class.active]="filter() === 'IDLE'" (click)="filter.set('IDLE')">
-    <span class="label"><span class="dot" style="background:var(--text)"></span>Đã gác vòi</span>
-    <span class="value num">{{ counts().IDLE }}</span>
-  </button>
-  <button type="button" [class.active]="filter() === 'OFFLINE'" (click)="filter.set('OFFLINE')">
-    <span class="label"><span class="dot" style="background:var(--accent)"></span>Offline</span>
-    <span class="value num">{{ counts().OFFLINE }}</span>
-  </button>
-  <button type="button" [class.active]="filter() === 'UNKNOWN'" (click)="filter.set('UNKNOWN')">
-    <span class="label"><span class="dot" style="background:var(--unknown)"></span>Không rõ</span>
-    <span class="value num">{{ counts().UNKNOWN }}</span>
-  </button>
-</div>
-
-<div class="toolbar">
-  <app-search-field placeholder="Tìm trụ hoặc nhiên liệu" [value]="query()" (queryChange)="query.set($event)"></app-search-field>
-  <div class="segmented">
-    <button type="button" [class.active]="view() === 'grid'" (click)="view.set('grid')">Dạng trụ</button>
-    <button type="button" [class.active]="view() === 'table'" (click)="view.set('table')">Dạng bảng</button>
-  </div>
-</div>
-
-@if (loading()) {
-  <div class="pump-grid">
-    @for (s of [1,2,3,4,5,6]; track s) {
-      <div class="skeleton-pump">
-        <i class="sk-top"></i><i class="sk-body"></i><i class="sk-base"></i>
+  } @else if (error() && !pumps().length) {
+    <div class="pm-error">
+      <span class="title">Không kết nối được bộ điều khiển trạm</span>
+      <span class="body">{{ error() }} Lần cập nhật thành công cuối: {{ updated() ? (updated() | date: 'HH:mm:ss') : '—' }}.</span>
+      <button type="button" class="retry" (click)="load()">Thử lại</button>
+    </div>
+  } @else if (!pumps().length) {
+    <div class="pm-empty">
+      <span class="title">Trạm chưa có trụ bơm</span>
+      <span class="body">Thêm trụ bơm trong Cài đặt trạm để bắt đầu theo dõi.</span>
+    </div>
+  } @else {
+    @if (error()) {
+      <div class="alert-strip">
+        <span class="alert-title">Mất kết nối bộ điều khiển trạm</span>
+        <span>Đang hiển thị dữ liệu lúc {{ updated() | date: 'HH:mm:ss' }}.</span>
+        <a (click)="load()">Thử lại</a>
       </div>
     }
-  </div>
-} @else if (error()) {
-  <div class="pm-error">
-    <span class="title">Không kết nối được bộ điều khiển trạm</span>
-    <span class="body">{{ error() }} Lần cập nhật thành công cuối: {{ updated() ? (updated() | date:'HH:mm:ss') : '—' }}.</span>
-    <button type="button" class="retry" (click)="load()">Thử lại</button>
-  </div>
-} @else if (!pumps().length) {
-  <div class="pm-empty">
-    <span class="title">Trạm chưa có trụ bơm</span>
-    <span class="body">Thêm trụ bơm trong Cài đặt trạm để bắt đầu theo dõi.</span>
-  </div>
-} @else if (!visible().length) {
-  <div class="pm-empty">
-    <span class="title">Không có trụ bơm phù hợp</span>
-    <span class="body">Thử bỏ bộ lọc hoặc đổi từ khóa tìm kiếm.</span>
-  </div>
-} @else if (view() === 'grid') {
-  <div class="pump-grid">
-    @for (p of visible(); track p.id) {
-      <article class="pump">
-        <header [style.border-bottom-color]="p.strip">
-          <span class="name">{{ p.number }}</span>
-          <span class="fuel-chip"><svg lucideDroplet [size]="14"></svg>{{ p.fuel }}</span>
-        </header>
-        <div class="body">
-          <div class="status-row">
-            <div class="status-cell">
-              <span class="icon-box" [style.border-color]="p.connColor" [style.color]="p.connColor">
-                @if (p.conn === 'ONLINE') {
-                  <svg lucideWifi [size]="18"></svg>
-                } @else if (p.conn === 'OFFLINE') {
-                  <svg lucideWifiOff [size]="18"></svg>
-                } @else {
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h.01"></path><path d="M8.5 16.429a5 5 0 0 1 7 0"></path><path d="M5 12.859a10 10 0 0 1 14 0" stroke-dasharray="3 3"></path><path d="M2 8.82a15 15 0 0 1 20 0" stroke-dasharray="3 3"></path></svg>
-                }
-              </span>
-              <div class="text">
-                <span class="caption">KẾT NỐI</span>
-                <span class="value" [style.color]="p.connColor">{{ p.connLabel }}</span>
-                <span class="sub">{{ p.connSub }}</span>
-              </div>
-            </div>
-            <div class="status-cell bordered">
-              <span class="icon-box" [style.border-color]="p.stateColor" [style.color]="p.stateColor">
-                <svg lucideFuel [size]="18"></svg>
-              </span>
-              <div class="text">
-                <span class="caption">VÒI BƠM</span>
-                <span class="value" [style.color]="p.stateColor">{{ p.stateLabel }}</span>
-                <span class="sub">{{ p.stateSub }}</span>
-              </div>
-            </div>
-          </div>
-          <div class="panel">
-            <div class="digital" [style.color]="p.digit">
-              <span class="caption">TIỀN</span>
-              <span class="num digit-money">{{ p.moneyKnown ? ((p.money ?? 0) | number:'1.0-0') + ' ₫' : '—' }}</span>
-              <span class="caption">LÍT</span>
-              <span class="num digit-sub">{{ p.litersKnown ? ((p.liters ?? 0) | number:'1.2-2') + ' L' : '—' }}</span>
-              <span class="caption">GIÁ</span>
-              <span class="num digit-sub">{{ p.price != null ? (p.price | number:'1.0-0') + ' ₫' : '—' }}</span>
-            </div>
-            <div class="foot-row">
-              <span>Tổng tích lũy</span>
-              <span class="num">{{ p.total != null ? (p.total | number:'1.2-2') + ' L' : '—' }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="base"></div>
-      </article>
-    }
-  </div>
-} @else {
-  <div class="table-wrapper">
-    <table>
-      <thead>
-        <tr>
-          <th>Trụ</th><th>Nhiên liệu</th><th>Trạng thái</th>
-          <th class="num">Tiền</th><th class="num">Lít</th><th class="num">Giá</th><th class="num">Tổng tích lũy</th>
-          <th>Kết nối</th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (p of visible(); track p.id) {
-          <tr>
-            <td>{{ p.number }}</td>
-            <td>{{ p.fuel }}</td>
-            <td><span class="state-pill" [style.color]="p.stateColor"><span class="dot" [style.background]="p.stateColor"></span>{{ p.stateLabel }}</span></td>
-            <td class="num">{{ p.moneyKnown ? ((p.money ?? 0) | number:'1.0-0') + ' ₫' : '—' }}</td>
-            <td class="num">{{ p.litersKnown ? ((p.liters ?? 0) | number:'1.2-2') + ' L' : '—' }}</td>
-            <td class="num">{{ p.price != null ? (p.price | number:'1.0-0') + ' ₫' : '—' }}</td>
-            <td class="num">{{ p.total != null ? (p.total | number:'1.2-2') + ' L' : '—' }}</td>
-            <td class="muted">{{ p.connLabel }}</td>
-          </tr>
+
+    <section class="status-block">
+      <div class="bar" aria-hidden="true">
+        @for (s of segments(); track s.state) {
+          @if (s.count) {
+            <i [style.flex]="s.count" [style.background]="s.color"></i>
+          }
         }
-      </tbody>
-    </table>
-  </div>
-}
+      </div>
+      <div class="chips">
+        @for (s of segments(); track s.state) {
+          <button type="button" class="chip" [class.active]="s.active" [attr.aria-pressed]="s.active" (click)="toggle(s.state)">
+            <i [style.background]="s.color"></i>{{ s.label }}<b class="num">{{ s.count }}</b>
+          </button>
+        }
+      </div>
+      <label class="search-box">
+        <svg lucideSearch [size]="16"></svg>
+        <input type="search" placeholder="Tìm trụ hoặc nhiên liệu" [value]="query()" (input)="query.set($any($event.target).value)" />
+      </label>
+    </section>
+
+    @if (!visible().length) {
+      <div class="pm-empty">
+        <span class="title">Không có trụ bơm phù hợp</span>
+        <span class="body">Thử bỏ bộ lọc hoặc đổi từ khóa tìm kiếm.</span>
+      </div>
+    } @else {
+      <div class="grid">
+        @for (p of visible(); track p.id) {
+          <app-pump-dispenser [pump]="p"></app-pump-dispenser>
+        }
+      </div>
+    }
+  }
+</div>

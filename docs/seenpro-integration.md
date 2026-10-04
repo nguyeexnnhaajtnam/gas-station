@@ -7,7 +7,7 @@ Không mục nào được đánh dấu `CONFIRMED` nếu chưa có request/resp
 | Login/session | `checklogin.php`, verification `view.php` | POST form, sau đó GET | HTML xác thực | Cookie giữ hoàn toàn ở backend | PARTIAL |
 | Company/dealer list | authenticated company-level `view.php` | GET | HTML server-rendered | `SeenProCompanyParser` → `SeenProCompanyMapper` | CONFIRMED |
 | Station list | `view.php` company → station | GET | HTML server-rendered | `SeenProStationParser` → `SeenProStationMapper` | CONFIRMED |
-| Transactions | `theodoibanhang.php` | GET | HTML server-rendered | Mapper/query boundary có sẵn, parser chờ fixture | PARTIAL |
+| Pump Code History | `theodoibanhang.php` | GET | HTML server-rendered | Isolated behind `SeenProPumpCodeAdapter` | PARTIAL |
 | Tanks | Trang bồn server-rendered | Chưa xác nhận | HTML | Chưa có parser | PARTIAL |
 | Realtime | `waittimeupdate.php`, `giaupdate.php` | Chưa xác nhận | Chưa xác nhận | Không gọi trước khi có trace | NOT_TRACED |
 
@@ -77,12 +77,12 @@ DashboardController
       → ReportProvider      → baocao.php
       → TankProvider        → khohang.php
       → PriceProvider       → quanlygia.php
-      → TransactionProvider → theodoibanhang.php (chưa gọi cho summary khi parser chưa xác nhận)
+      → PumpCodeHistoryProvider → SeenProPumpCodeAdapter → theodoibanhang.php
 ```
 
 Mỗi nguồn được cô lập. Một parser chưa hoàn thiện không làm `/api/v1/dashboard/summary` trả 503; response trả `partial=true`, metric chưa xác minh là `null`, và liệt kê `unavailableSources`. Không thay `null` bằng số 0 vì như vậy sẽ tạo dữ liệu nghiệp vụ giả.
 
-Hiện tại `quanlycuahang.php` chỉ được dùng để xác nhận context/page có thể truy cập và `quanlygia.php` xác nhận source availability. Các metric báo cáo, tank và transaction vẫn cần fixture HTML đã làm sạch trước khi viết parser. `theodoibanhang.php` đặc biệt không được Dashboard gọi cho đến khi parser được xác nhận.
+`theodoibanhang.php` là chi tiết triển khai legacy cho module nghiệp vụ Mã bơm. Tên endpoint và query parameter SeenPro không xuất hiện trong REST/domain hoặc Angular.
 
 ## Online bootstrap
 

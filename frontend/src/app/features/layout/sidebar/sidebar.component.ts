@@ -1,79 +1,44 @@
-import { ChangeDetectionStrategy, Component, HostListener, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { NgTemplateOutlet } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { CompanyContextService } from '../../../core/company-context.service';
+import { LayoutStateService } from '../layout-state.service';
 import {
   LucideFuel,
   LucideLock,
-  LucideChevronsLeft,
-  LucideChevronsRight,
   LucideLayoutDashboard,
-  LucideGauge,
-  LucideReceipt,
-  LucideClipboardList,
-  LucideDroplet,
-  LucideWarehouse,
+  LucideActivity,
+  LucideBarcode,
   LucideTag,
+  LucideCylinder,
+  LucideCalendarClock,
+  LucideStore,
   LucideUsers,
-  LucideWallet,
-  LucideFileText,
-  LucideBuilding,
-  LucideUser,
-  LucideSettings,
+  LucideChartColumn,
 } from '../../../shared/icons';
 
-type IconKey =
-  | 'dashboard' | 'gauge' | 'receipt' | 'shift' | 'tank' | 'warehouse' | 'tag'
-  | 'users' | 'fuel' | 'wallet' | 'file' | 'building' | 'user' | 'settings';
+type IconKey = 'dashboard' | 'activity' | 'barcode' | 'fuel' | 'tag' | 'tank' | 'shift' | 'store' | 'users' | 'chart';
 
 interface NavItem {
   label: string;
   link: string;
   icon: IconKey;
   requiresStation: boolean;
+  /** Not available yet: rendered locked with the "SẮP CÓ" tag. */
+  soon?: boolean;
 }
 
-interface NavGroup {
-  label: string;
-  items: NavItem[];
-}
-
-const GROUPS: NavGroup[] = [
-  { label: 'TỔNG QUAN', items: [{ label: 'Tổng quan', link: '/dashboard', icon: 'dashboard', requiresStation: true }] },
-  {
-    label: 'VẬN HÀNH',
-    items: [
-      { label: 'Theo dõi trụ bơm', link: '/pumps', icon: 'gauge', requiresStation: true },
-      { label: 'Giao dịch', link: '/transactions', icon: 'receipt', requiresStation: true },
-      { label: 'Ca bán hàng', link: '/shifts', icon: 'shift', requiresStation: true },
-    ],
-  },
-  {
-    label: 'NHIÊN LIỆU',
-    items: [
-      { label: 'Bồn bể', link: '/tanks', icon: 'tank', requiresStation: true },
-      { label: 'Kho nhiên liệu', link: '/fuel-inventory', icon: 'warehouse', requiresStation: true },
-      { label: 'Giá nhiên liệu', link: '/fuel-prices', icon: 'tag', requiresStation: true },
-    ],
-  },
-  {
-    label: 'KINH DOANH',
-    items: [
-      { label: 'Khách hàng', link: '/customers', icon: 'users', requiresStation: true },
-      { label: 'Cấp nhiên liệu', link: '/fuel-supply', icon: 'fuel', requiresStation: true },
-      { label: 'Công nợ', link: '/debts', icon: 'wallet', requiresStation: true },
-      { label: 'Hóa đơn', link: '/invoices', icon: 'receipt', requiresStation: true },
-    ],
-  },
-  { label: 'BÁO CÁO', items: [{ label: 'Báo cáo', link: '/reports', icon: 'file', requiresStation: true }] },
-  {
-    label: 'HỆ THỐNG',
-    items: [
-      { label: 'Công ty / Đại lý', link: '/companies', icon: 'building', requiresStation: false },
-      { label: 'Người dùng', link: '/users', icon: 'user', requiresStation: false },
-      { label: 'Cài đặt', link: '/settings', icon: 'settings', requiresStation: false },
-    ],
-  },
+const ITEMS: NavItem[] = [
+  { label: 'Tổng quan', link: '/dashboard', icon: 'dashboard', requiresStation: true },
+  { label: 'Theo dõi online', link: '/pumps', icon: 'activity', requiresStation: true },
+  { label: 'Mã bơm', link: '/pump-codes', icon: 'barcode', requiresStation: true },
+  { label: 'Cột bơm', link: '/pump-columns', icon: 'fuel', requiresStation: true },
+  { label: 'Giá nhiên liệu', link: '/fuel-prices', icon: 'tag', requiresStation: true },
+  { label: 'Bồn bể', link: '/tanks', icon: 'tank', requiresStation: true },
+  { label: 'Ca bán hàng', link: '/shifts', icon: 'shift', requiresStation: true, soon: true },
+  { label: 'Thông tin cửa hàng', link: '/store-info', icon: 'store', requiresStation: true },
+  { label: 'Khách hàng', link: '/customers', icon: 'users', requiresStation: true },
+  { label: 'Báo cáo doanh thu', link: '/reports', icon: 'chart', requiresStation: true },
 ];
 
 @Component({
@@ -85,21 +50,15 @@ const GROUPS: NavGroup[] = [
     NgTemplateOutlet,
     LucideFuel,
     LucideLock,
-    LucideChevronsLeft,
-    LucideChevronsRight,
     LucideLayoutDashboard,
-    LucideGauge,
-    LucideReceipt,
-    LucideClipboardList,
-    LucideDroplet,
-    LucideWarehouse,
+    LucideActivity,
+    LucideBarcode,
     LucideTag,
+    LucideCylinder,
+    LucideCalendarClock,
+    LucideStore,
     LucideUsers,
-    LucideWallet,
-    LucideFileText,
-    LucideBuilding,
-    LucideUser,
-    LucideSettings,
+    LucideChartColumn,
   ],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './sidebar.component.html',
@@ -107,38 +66,18 @@ const GROUPS: NavGroup[] = [
 })
 export class SidebarComponent {
   readonly context = inject(CompanyContextService);
-  readonly groups = GROUPS;
-
-  private readonly manualCollapse = signal<boolean | null>(null);
-  private readonly viewportNarrow = signal(typeof window !== 'undefined' && window.innerWidth < 1180);
-
-  readonly collapsed = signal(false);
-
-  constructor() {
-    this.syncCollapsed();
-  }
-
-  private syncCollapsed() {
-    this.collapsed.set(this.manualCollapse() ?? this.viewportNarrow());
-  }
-
-  @HostListener('window:resize')
-  onResize() {
-    if (typeof window === 'undefined') return;
-    this.viewportNarrow.set(window.innerWidth < 1180);
-    this.syncCollapsed();
-  }
-
-  toggleCollapse() {
-    this.manualCollapse.set(!this.collapsed());
-    this.syncCollapsed();
-  }
+  readonly layout = inject(LayoutStateService);
+  readonly items = ITEMS;
 
   hasStation() {
     return !!this.context.selectedStation();
   }
 
-  disabledTitle(item: NavItem) {
-    return item.requiresStation && !this.hasStation() ? `${item.label} · cần chọn trạm` : item.label;
+  locked(item: NavItem) {
+    return !!item.soon || (item.requiresStation && !this.hasStation());
+  }
+
+  lockedTitle(item: NavItem) {
+    return item.soon ? `${item.label} · chưa mở cho trạm này` : `${item.label} · cần chọn trạm`;
   }
 }

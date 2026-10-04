@@ -1,0 +1,4 @@
+package vn.gasstation.integration.seenpro.parser;
+import org.junit.jupiter.api.Test;import static org.assertj.core.api.Assertions.assertThat;
+class SeenProCustomerHtmlParserTest {@Test void parsesOnlyCustomerRows(){String html="""
+<html><body><div class="chiTiet"><div class="rowx setrow"><div class="tenKhachHang">Công ty Minh An</div><div class="dienThoai">0100000001</div><div class="dienThoai">KH0001</div><div class="diaChix">Hà Nội</div><div class="nguoiDaiDien">contact@example.test</div></div><div class="modal"><div class="rowx"><div class="dienThoai">IGNORE</div></div></div></div></body></html>""";var rows=new SeenProCustomerHtmlParser().parse(html);assertThat(rows).hasSize(1);assertThat(rows.getFirst().customerCode()).isEqualTo("KH0001");assertThat(rows.getFirst().companyName()).isEqualTo("Công ty Minh An");assertThat(rows.getFirst().taxCode()).isEqualTo("0100000001");}}

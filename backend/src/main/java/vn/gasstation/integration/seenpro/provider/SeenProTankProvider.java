@@ -1,21 +1,22 @@
 package vn.gasstation.integration.seenpro.provider;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.stereotype.Component;
-import vn.gasstation.integration.seenpro.client.LegacySystemUnavailableException;
 import vn.gasstation.integration.seenpro.client.SeenProHttpClient;
-import vn.gasstation.integration.seenpro.session.SeenProSessionManager;
+import vn.gasstation.integration.seenpro.mapper.SeenProTankMapper;
+import vn.gasstation.integration.seenpro.parser.SeenProTankHtmlParser;
 import vn.gasstation.tank.application.TankProvider;
 import vn.gasstation.tank.domain.Tank;
 import java.util.List; import java.util.Map; import java.util.Optional;
 @Component @ConditionalOnProperty(name="app.data-source", havingValue="seenpro", matchIfMissing=true)
 public class SeenProTankProvider implements TankProvider {
     private final SeenProHttpClient client;
-    private final SeenProSessionManager sessions;
-    public SeenProTankProvider(SeenProHttpClient client, SeenProSessionManager sessions) { this.client = client; this.sessions = sessions; }
-    public List<Tank> findAll() {
-        sessions.activeStationId().orElseThrow(() -> new LegacySystemUnavailableException("Chưa kích hoạt ngữ cảnh trạm"));
-        client.get("khohang.php", Map.of());
-        throw new LegacySystemUnavailableException("Cấu trúc trang kho/bồn chưa được xác nhận");
+    private final SeenProTankHtmlParser parser;
+    private final SeenProTankMapper mapper;
+    public SeenProTankProvider(SeenProHttpClient client, SeenProTankHtmlParser parser, SeenProTankMapper mapper) {
+        this.client = client; this.parser = parser; this.mapper = mapper;
     }
-    public Optional<Tank> findById(String id) { return Optional.empty(); }
+    public List<Tank> findAll() {
+        return parser.parse(client.get("khohang.php", Map.of())).stream().map(mapper::map).toList();
+    }
+    public Optional<Tank> findById(String id) { return findAll().stream().filter(tank -> tank.id().equals(id)).findFirst(); }
 }

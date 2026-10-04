@@ -1,58 +1,134 @@
-<div class="header-row">
-  <div>
-    <h1>Tổng quan vận hành</h1>
-    <p class="subline">
-      <strong>{{ shortStationName(context.selectedStation()?.name) || '—' }}</strong>
-      · Chưa có địa chỉ · Mã trạm: {{ context.selectedStation()?.code || '—' }}
-    </p>
-  </div>
-  <div class="header-actions">
-    @if (summary(); as current) {
-      <span class="connection" [class.online]="current.stationContextReady"><i></i>{{ current.stationContextReady ? 'Đã kết nối' : 'Mất kết nối' }}</span>
-    }
-    <span class="today">Cập nhật: {{ lastRefresh() ? (lastRefresh() | date: 'HH:mm:ss') : '—' }}</span>
-    <span class="today">Hôm nay, {{ today | date: 'dd/MM/yyyy' }}</span>
-    <button type="button" class="btn-icon" title="Làm mới" (click)="load()">
-      <svg lucideRefreshCw [size]="16"></svg>
-    </button>
-  </div>
-</div>
+<app-page-header
+  eyebrow="Tổng quan"
+  title="Tổng quan vận hành"
+  [subtitle]="subtitle()"
+  [status]="error() ? 'paused' : 'live'"
+  [time]="now()"
+  [showRefresh]="true"
+  [refreshing]="refreshing()"
+  (refresh)="load()"
+></app-page-header>
 
 @if (loading()) {
-  <div class="kpi-strip">
-    @for (i of [1, 2, 3, 4]; track i) {
-      <app-skeleton type="block" [height]="104"></app-skeleton>
-    }
+  <div class="page-stack">
+    <div class="split-grid">
+      <app-skeleton type="block" [height]="230"></app-skeleton>
+      <app-skeleton type="block" [height]="230"></app-skeleton>
+    </div>
+    <div class="split-grid">
+      <app-skeleton type="block" [height]="220"></app-skeleton>
+      <app-skeleton type="block" [height]="220"></app-skeleton>
+    </div>
   </div>
-} @else if (error()) {
-  <app-error-state title="Không thể tải dữ liệu tổng quan." (retry)="load()"></app-error-state>
-} @else if (summary(); as s) {
-  <div class="kpi-strip">
-    <app-kpi-cell label="Doanh thu hôm nay" unit="₫" [value]="s.revenue" format="currency"></app-kpi-cell>
-    <app-kpi-cell label="Sản lượng" unit="lít" [value]="s.litersSold" format="number"></app-kpi-cell>
-    <app-kpi-cell label="Giao dịch" unit="lượt" [value]="s.transactionCount" format="integer"></app-kpi-cell>
-    <app-kpi-cell label="Trụ hoạt động" unit="trụ" [value]="s.onlinePumpCount" format="integer"></app-kpi-cell>
-  </div>
-
-  <section class="dashboard-section">
-    <div class="section-heading"><div><h2>Trạng thái trụ bơm</h2><p>Dữ liệu realtime đã được backend tổng hợp</p></div><span>{{ s.pumpOverview.length }} trụ</span></div>
-    @if (s.pumpOverview.length) {
-      <div class="pump-grid">
-        @for (pump of s.pumpOverview; track pump.id) {
-          <article class="pump-card" [class.offline]="pump.connectionStatus==='OFFLINE'" [class.maintenance]="pump.operationalStatus==='MAINTENANCE'">
-            <header><div><span>TRỤ {{ pump.number }}</span><strong>{{ pump.fuelType || 'Chưa xác định' }}</strong></div><em [class.online]="pump.connectionStatus==='ONLINE'">{{ pump.connectionStatus==='ONLINE'?'Online':pump.connectionStatus==='OFFLINE'?'Offline':'Không rõ' }}</em></header>
-            <div class="pump-money">{{ pump.money===null?'—':(pump.money | number:'1.0-0') }} <small>₫</small></div>
-            <dl><div><dt>Số lít</dt><dd>{{ pump.liters===null?'—':(pump.liters | number:'1.2-2') }}</dd></div><div><dt>Đơn giá</dt><dd>{{ pump.unitPrice===null?'—':(pump.unitPrice | number:'1.0-0') }}</dd></div><div><dt>Vòi bơm</dt><dd>{{ pump.nozzleStatus }}</dd></div></dl>
-            <footer>{{ pump.observedAt | date:'HH:mm:ss' }}</footer>
-          </article>
+} @else if (error() && !summary()) {
+  <app-panel [alert]="true">
+    <app-error-state title="Không thể tải dữ liệu tổng quan." (retry)="load()"></app-error-state>
+  </app-panel>
+} @else {
+  <div class="page-stack">
+    @if (alerts().length) {
+      <div class="alert-strip" role="status">
+        <span class="alert-title"><svg lucideTriangleAlert [size]="18"></svg>Cần xử lý</span>
+        @for (a of alerts(); track a.label) {
+          <a [routerLink]="a.link" [queryParams]="a.params">{{ a.label }}</a>
         }
       </div>
-    } @else {
-      <div class="pump-empty">Dữ liệu Online chưa thể ánh xạ. Cần fixture payload đã làm sạch từ sáu endpoint realtime.</div>
     }
-  </section>
 
-  @if (s.partial) {
-    <div class="notice">Một số nguồn dữ liệu chưa sẵn sàng. Dashboard vẫn hoạt động với dữ liệu đã xác minh.</div>
-  }
+    <div class="split-grid">
+      <app-panel title="Trụ bơm" link="/pumps" linkLabel="Theo dõi online">
+        @if (pumps().length) {
+          <div class="glyphs">
+            @for (p of pumps(); track p.id) {
+              <app-pump-glyph [pump]="p"></app-pump-glyph>
+            }
+          </div>
+        } @else {
+          <app-empty-state variant="inline" title="Chưa có dữ liệu trụ bơm." message="Trạng thái từng trụ sẽ hiển thị khi hệ thống kết nối được bộ điều khiển trạm."></app-empty-state>
+        }
+      </app-panel>
+
+      <app-panel title="Hôm nay" [meta]="(today | date: 'dd/MM/yyyy') ?? ''">
+        <div class="stat-row">
+          <span class="label">Doanh thu</span>
+          <span class="val num"><b>{{ summary()?.revenue != null ? (summary()!.revenue | number: '1.0-0') : '—' }}</b><small>₫</small></span>
+        </div>
+        <div class="stat-row">
+          <span class="label">Sản lượng</span>
+          <span class="val num"><b>{{ summary()?.litersSold != null ? (summary()!.litersSold | number: '1.2-2') : '—' }}</b><small>L</small></span>
+        </div>
+        <div class="stat-row">
+          <span class="label">Giao dịch</span>
+          <span class="val num"><b>{{ summary()?.transactionCount != null ? (summary()!.transactionCount | number: '1.0-0') : '—' }}</b><small>lượt</small></span>
+        </div>
+      </app-panel>
+    </div>
+
+    <div class="split-grid">
+      <app-panel title="Bồn bể" [alert]="negativeTanks() > 0" [meta]="negativeTanks() ? negativeTanks() + ' bồn cần đối soát' : ''" [link]="negativeTanks() ? '' : '/tanks'" linkLabel="Bồn bể">
+        @if (tanks.loading()) {
+          <app-skeleton type="block" [height]="180"></app-skeleton>
+        } @else if (tanks.error()) {
+          <app-error-state title="Không thể tải dữ liệu bồn bể." (retry)="load()"></app-error-state>
+        } @else if (!tankViews().length) {
+          <app-empty-state variant="inline" title="Chưa có dữ liệu bồn." message="Tồn kho theo bồn sẽ hiển thị khi trạm có dữ liệu đo bồn."></app-empty-state>
+        } @else {
+          <div class="tanks">
+            @for (t of tankViews(); track t.id) {
+              <a routerLink="/tanks" class="tank">
+                <app-tank-gauge [negative]="t.negative" [color]="t.color"></app-tank-gauge>
+                <span class="tank-name">{{ t.name }}</span>
+                <span class="tank-fuel">{{ t.fuelName }}</span>
+              </a>
+            }
+          </div>
+        }
+      </app-panel>
+
+      <app-panel title="Giá hiện hành" link="/fuel-prices" linkLabel="Chi tiết">
+        @if (prices.loading()) {
+          <app-skeleton type="rows" [rows]="2" [columns]="2"></app-skeleton>
+        } @else if (prices.error()) {
+          <app-error-state title="Không thể tải giá nhiên liệu." (retry)="load()"></app-error-state>
+        } @else if (!priceViews().length) {
+          <app-empty-state variant="inline" title="Chưa có giá nhiên liệu."></app-empty-state>
+        } @else {
+          @for (p of priceViews(); track p.id) {
+            <div class="price-row">
+              <span class="price-mark" [style.background]="p.color"></span>
+              <span class="price-name">{{ p.fuelName }}</span>
+              <span class="price-val num">{{ p.unitPrice != null ? (p.unitPrice | number: '1.0-0') : '—' }}<small> ₫/L</small></span>
+            </div>
+          }
+        }
+      </app-panel>
+    </div>
+
+    <app-panel title="Cơ cấu nhiên liệu" [meta]="(mixFrom | date: 'dd/MM') + ' – ' + (today | date: 'dd/MM')">
+      @if (report.loading()) {
+        <app-skeleton type="block" [height]="110"></app-skeleton>
+      } @else if (report.error()) {
+        <app-error-state title="Không thể tải sản lượng theo nhiên liệu." (retry)="load()"></app-error-state>
+      } @else if (!mix().rows.length) {
+        <app-empty-state variant="inline" title="Chưa có sản lượng trong 10 ngày gần nhất."></app-empty-state>
+      } @else {
+        <div class="mix">
+          <span class="mix-total num"><b>{{ mix().total | number: '1.0-0' }}</b> lít</span>
+          <div class="mix-bar">
+            @for (m of mix().rows; track m.name) {
+              <i [style.flex]="m.liters" [style.background]="m.color" [title]="m.name"></i>
+            }
+          </div>
+          <div class="legend">
+            @for (m of mix().rows; track m.name) {
+              <span class="legend-item">
+                <span class="swatch" [style.background]="m.color"></span>
+                <span><b>{{ m.name }}</b><small class="num">{{ m.share | number: '1.0-0' }}% · {{ m.liters | number: '1.0-0' }} L</small></span>
+              </span>
+            }
+          </div>
+        </div>
+      }
+    </app-panel>
+  </div>
 }

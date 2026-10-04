@@ -1,0 +1,108 @@
+<app-page-header
+  eyebrow="Vận hành"
+  title="Mã bơm"
+  subtitle="Lịch sử hoạt động theo mã bơm của cửa hàng"
+  status="updated"
+  [time]="updatedAt()"
+  [showRefresh]="true"
+  [refreshing]="loading()"
+  (refresh)="load()"
+></app-page-header>
+
+<app-data-list
+  [state]="state()"
+  searchPlaceholder="Tìm mã bơm…"
+  [query]="pumpId()"
+  (queryChange)="onSearch($event)"
+  [countLabel]="(totalElements() | number: '1.0-0') + ' bản ghi'"
+  [page]="page()"
+  [totalPages]="totalPages()"
+  (pageChange)="changePage($event)"
+  [skeletonColumns]="8"
+  emptyTitle="Không có mã bơm phù hợp"
+  emptyMessage="Thử bỏ bộ lọc hoặc đổi khoảng thời gian."
+  errorTitle="Không thể tải lịch sử mã bơm"
+  [errorMessage]="error()"
+  (retry)="load()"
+>
+  <app-filter-popover filters #range label="Thời gian" [value]="rangeLabel()">
+    <label class="pop-field"><span>Từ ngày</span><input type="date" [value]="from()" (change)="from.set($any($event.target).value)" /></label>
+    <label class="pop-field"><span>Đến ngày</span><input type="date" [value]="to()" (change)="to.set($any($event.target).value)" /></label>
+    <div class="pop-actions"><button type="button" class="btn btn-primary" (click)="applyPopover(range)">Áp dụng</button></div>
+  </app-filter-popover>
+
+  <label filters class="filter-btn">
+    <span class="filter-label">Nhiên liệu</span><b>{{ fuelType() || 'Tất cả' }}</b><svg lucideChevronDown [size]="14"></svg>
+    <select [value]="fuelType()" (change)="setAndLoad(fuelType, $any($event.target).value)" aria-label="Nhiên liệu">
+      <option value="">Tất cả</option>
+      @for (f of fuels(); track f) {
+        <option [value]="f">{{ f }}</option>
+      }
+    </select>
+  </label>
+
+  <label filters class="filter-btn">
+    <span class="filter-label">Hóa đơn</span><b>{{ invoiceLabels[status()] }}</b><svg lucideChevronDown [size]="14"></svg>
+    <select [value]="status()" (change)="setAndLoad(status, $any($event.target).value)" aria-label="Hóa đơn">
+      <option value="">Tất cả</option>
+      <option value="ISSUED">Đã xuất</option>
+      <option value="NOT_ISSUED">Chưa xuất</option>
+    </select>
+  </label>
+
+  <label filters class="filter-btn">
+    <span class="filter-label">Sắp xếp</span><b>{{ sortLabels[sort()] }}</b><svg lucideChevronDown [size]="14"></svg>
+    <select [value]="sort()" (change)="setAndLoad(sort, $any($event.target).value)" aria-label="Sắp xếp">
+      <option value="finishedAt,desc">Mới nhất</option>
+      <option value="finishedAt,asc">Cũ nhất</option>
+      <option value="amount,desc">Số tiền giảm dần</option>
+    </select>
+  </label>
+
+  <app-filter-popover filters #more label="Bộ lọc khác" [value]="moreCount() ? moreCount() + '' : ''" [alignRight]="true">
+    <label class="pop-field"><span>Khách hàng</span><input placeholder="Tên khách hàng" [value]="customer()" (input)="customer.set($any($event.target).value)" /></label>
+    <label class="pop-field"><span>Thành tiền</span><input placeholder="Điều kiện số tiền" [value]="amountFilter()" (input)="amountFilter.set($any($event.target).value)" /></label>
+    <label class="pop-field"><span>Số lít</span><input placeholder="Điều kiện sản lượng" [value]="volumeFilter()" (input)="volumeFilter.set($any($event.target).value)" /></label>
+    <div class="pop-actions">
+      <button type="button" class="btn btn-primary" (click)="applyPopover(more)">Áp dụng</button>
+      <button type="button" class="btn btn-outline" (click)="clearMore(more)">Xóa lọc</button>
+    </div>
+  </app-filter-popover>
+
+  <table class="dl-table" style="min-width: 1040px">
+    <thead>
+      <tr>
+        <th>Mã bơm</th>
+        <th>Nhiên liệu</th>
+        <th class="num">Số lít</th>
+        <th class="num">Đơn giá</th>
+        <th class="num">Thành tiền</th>
+        <th>Hoàn tất</th>
+        <th>Khách hàng</th>
+        <th>Hóa đơn</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (item of histories(); track track(item, $index)) {
+        <tr>
+          <td class="nowrap">
+            <span class="cell-main mono">{{ item.pumpCode || '—' }}</span>
+            <span class="cell-sub">{{ item.dispenser || '—' }}</span>
+          </td>
+          <td class="nowrap">{{ item.fuelType || '—' }}</td>
+          <td class="num">{{ item.volume | number: '1.2-2' }} L</td>
+          <td class="num">{{ item.unitPrice | number: '1.0-0' }} ₫</td>
+          <td class="num"><b>{{ item.amount | number: '1.0-0' }} ₫</b></td>
+          <td class="nowrap">{{ item.finishedAt | date: 'dd/MM/yyyy HH:mm' }}</td>
+          <td>{{ item.customer || 'Khách lẻ' }}</td>
+          <td class="nowrap">
+            <app-status-tag [tone]="tone(item.invoiceStatus)" [label]="invoiceLabel(item.invoiceStatus)"></app-status-tag>
+            @if (item.invoiceNumber) {
+              <span class="cell-sub">{{ item.invoiceNumber }}</span>
+            }
+          </td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</app-data-list>

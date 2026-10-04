@@ -1,0 +1,3 @@
+package vn.gasstation.report.api;
+import java.time.LocalDate;import org.springframework.format.annotation.DateTimeFormat;import org.springframework.web.bind.annotation.*;import vn.gasstation.report.application.RevenueReportService;import vn.gasstation.report.domain.RevenueReport;
+@RestController @RequestMapping("/api/v1/revenue-report") public class RevenueReportController {private final RevenueReportService service;public RevenueReportController(RevenueReportService service){this.service=service;}@GetMapping public RevenueReport get(@RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate from,@RequestParam(required=false) @DateTimeFormat(iso=DateTimeFormat.ISO.DATE) LocalDate to){return service.get(from,to);}}

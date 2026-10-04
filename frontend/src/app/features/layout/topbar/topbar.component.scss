@@ -2,27 +2,76 @@
   display: block;
   position: sticky;
   top: 0;
-  z-index: 50;
+  z-index: 30;
 }
 
 .topbar {
   height: var(--topbar-height);
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  padding: 0 var(--space-7);
-  background: var(--surface);
-  border-bottom: 2px solid var(--line);
+  gap: var(--space-3);
+  padding: 0 var(--space-6);
+  background: var(--color-bg);
+  border-bottom: 2px solid var(--color-divider);
+}
+
+.hamburger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  padding: 0;
+  border: 2px solid var(--color-text);
+  background: var(--color-neutral-100);
+  color: var(--color-text);
 }
 
 .right {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  flex: none;
+  min-width: 0;
+  margin-left: auto;
 }
 
-.btn-icon {
-  width: var(--control-h-icon);
-  height: var(--control-h-icon);
+.icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+}
+
+.icon-btn:hover:not(:disabled) {
+  background: var(--color-neutral-200);
+}
+
+@media (max-width: 1023px) {
+  .topbar {
+    padding: 0 var(--space-5);
+  }
+}
+
+@media (max-width: 639px) {
+  .topbar {
+    padding: 0 var(--space-3);
+    gap: var(--space-2);
+  }
+
+  .right {
+    flex: 1;
+    gap: var(--space-2);
+  }
+
+  app-context-switcher {
+    flex: 1;
+    min-width: 0;
+  }
 }

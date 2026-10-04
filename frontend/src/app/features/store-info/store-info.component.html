@@ -1,0 +1,63 @@
+<app-page-header
+  eyebrow="Cửa hàng"
+  title="Thông tin cửa hàng"
+  subtitle="Thông tin pháp lý và liên hệ của đơn vị vận hành"
+  status="updated"
+  [time]="updatedAt()"
+  [showRefresh]="true"
+  [refreshing]="loading()"
+  (refresh)="load()"
+></app-page-header>
+
+<ng-template #rows let-items>
+  @for (r of items; track r.label) {
+    <div class="row">
+      <span class="k">{{ r.label }}</span>
+      <span class="v" [class.empty]="!r.value">{{ r.value || 'Chưa cập nhật' }}</span>
+    </div>
+  }
+</ng-template>
+
+<div class="tree">
+  @if (loading()) {
+    <app-skeleton type="rows" [rows]="6" [columns]="2"></app-skeleton>
+  } @else if (error()) {
+    <app-panel [alert]="true">
+      <app-error-state title="Không thể tải thông tin cửa hàng" [message]="error()" (retry)="load()"></app-error-state>
+    </app-panel>
+  } @else if (!info()) {
+    <app-panel>
+      <app-empty-state title="Chưa có thông tin" message="Trạm chưa có thông tin cửa hàng."></app-empty-state>
+    </app-panel>
+  } @else {
+    <section class="parent-head">
+      <span class="icon-box"><svg lucideBuilding [size]="20"></svg></span>
+      <span class="titles">
+        <span class="kicker">CẤP CHA · ĐƠN VỊ CHỦ QUẢN</span>
+        <span class="title">{{ info()!.companyName || 'Chưa cập nhật' }}</span>
+      </span>
+    </section>
+    <section class="parent-body">
+      <ng-container *ngTemplateOutlet="rows; context: { $implicit: companyRows() }"></ng-container>
+    </section>
+
+    <div class="trunk"><span>1 cửa hàng trực thuộc</span></div>
+
+    <div class="child">
+      <div class="branch" aria-hidden="true"><i class="v"></i><i class="h"></i></div>
+      <app-panel [alert]="true" class="child-panel">
+        <div class="child-head">
+          <span class="child-title">
+            <span class="icon-box dark"><svg lucideFuel [size]="18"></svg></span>
+            <span class="titles">
+              <span class="kicker muted">CẤP CON · CỬA HÀNG</span>
+              <span class="title small">{{ info()!.storeName || 'Chưa cập nhật' }}</span>
+            </span>
+          </span>
+          <app-status-tag tone="danger" label="Đang chọn"></app-status-tag>
+        </div>
+        <ng-container *ngTemplateOutlet="rows; context: { $implicit: storeRows() }"></ng-container>
+      </app-panel>
+    </div>
+  }
+</div>

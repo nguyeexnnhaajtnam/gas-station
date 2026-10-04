@@ -1,21 +1,62 @@
-<app-page-header eyebrow="Nhiên liệu" title="Bồn bể" subtitle="Tồn kho nhiên liệu ước tính theo bồn"></app-page-header>
+<app-page-header
+  eyebrow="Nhiên liệu"
+  title="Bồn bể"
+  subtitle="Tồn kho nhiên liệu ước tính theo bồn"
+  status="updated"
+  [time]="updatedAt()"
+  [showRefresh]="true"
+  [refreshing]="loading()"
+  (refresh)="load()"
+></app-page-header>
 
 @if (loading()) {
-  <div class="panel">
-    <app-skeleton type="rows" [rows]="3" [columns]="2"></app-skeleton>
+  <div class="card-grid">
+    <app-skeleton type="block" [height]="230"></app-skeleton>
+    <app-skeleton type="block" [height]="230"></app-skeleton>
   </div>
 } @else if (error()) {
-  <div class="panel">
+  <app-panel [alert]="true">
     <app-error-state title="Không thể tải dữ liệu bồn bể" [message]="error()" (retry)="load()"></app-error-state>
-  </div>
-} @else if (tanks().length === 0) {
-  <div class="panel">
-    <app-empty-state title="Chưa có dữ liệu bồn." message="Dữ liệu tồn kho sẽ hiển thị khi có bồn được cấu hình."></app-empty-state>
-  </div>
+  </app-panel>
+} @else if (!views().length) {
+  <app-panel>
+    <app-empty-state title="Trạm chưa có bồn bể" message="Bồn bể sẽ hiển thị khi trạm có cấu hình bồn."></app-empty-state>
+  </app-panel>
 } @else {
-  <div class="panel">
-    @for (tank of tanks(); track tank.id) {
-      <app-tank-level [name]="tank.name" [fuelName]="tank.fuelName" [currentLiters]="tank.estimatedVolumeLiters"></app-tank-level>
+  <div class="page-stack">
+    @if (negativeCount()) {
+      <div class="alert-strip" role="status">
+        <svg lucideTriangleAlert [size]="18"></svg>
+        <span class="alert-body">
+          <span class="alert-title">{{ negativeCount() }} bồn đang tồn kho âm</span>
+          <span>Lượng xuất ghi nhận lớn hơn lượng nhập. Kiểm tra phiếu nhập kho và đối soát với số đo thực tế.</span>
+        </span>
+      </div>
     }
+    <div class="card-grid">
+      @for (t of views(); track t.id) {
+        <app-panel [alert]="t.negative">
+          <div class="tank">
+            <app-tank-gauge [width]="110" [height]="170" [negative]="t.negative" [color]="t.color"></app-tank-gauge>
+            <div class="info">
+              <span class="name-block">
+                <span class="name">{{ t.name }}</span>
+                <span class="fuel"><span class="swatch" [style.background]="t.color"></span>{{ t.fuelName || 'Chưa cài đặt' }}</span>
+              </span>
+              @if (t.negative) {
+                <app-status-tag tone="danger" label="Cần đối soát"></app-status-tag>
+              } @else {
+                <app-status-tag tone="neutral" label="Đang theo dõi"></app-status-tag>
+              }
+              <span class="stock">
+                <span class="label">Tồn kho ước tính</span>
+                <span class="value num" [class.danger]="t.negative">{{ t.estimatedVolumeLiters | number: '1.0-2' }} L</span>
+              </span>
+              <span class="note">Dung tích bồn chưa cài đặt — mức đầy chưa tính được.</span>
+            </div>
+          </div>
+        </app-panel>
+      }
+    </div>
   </div>
 }

@@ -14,7 +14,7 @@ Angular -> /api/v1 -> Application service -> Provider interface
 
 - `auth`: nền tảng định danh và hợp đồng đăng nhập. Flyway tạo user/role; JWT chưa được phát hành cho đến khi chính sách xác thực được chốt.
 - `company`: danh sách company/dealer và context đầu tiên sau admin login; không chứa hoặc ánh xạ legacy password.
-- `station`, `transaction`, `tank`: domain, application service, provider interface và API riêng.
+- `station`, `pumpcode`, `tank`: domain, application service, provider interface và API riêng.
 - `dashboard`: tổng hợp các use case hiện có; không truy cập SeenPro trực tiếp.
 - `pump`: model trạng thái thời gian thực độc lập với transport.
 - `integration.seenpro`: toàn bộ session, HTTP, legacy model, parser, mapper và provider adapter.
@@ -28,7 +28,7 @@ Luồng điều hướng đã xác nhận là `login → companies → stations 
 
 Cookie được giữ trong `CookieManager` ở backend và không được trả về frontend. Base URL SeenPro đến từ cấu hình môi trường; credential của public login chỉ đi qua bộ nhớ tới adapter, không được lưu hoặc log. POST đăng nhập duy nhất tới `checklogin.php` đã được xác nhận và không được retry; sau đó backend GET trang verification bằng cùng cookie store. Verifier chỉ trả `AUTHENTICATED` khi đồng thời có response thành công và các marker HTML đã xác nhận; HTTP 200 hoặc cookie riêng lẻ không đủ. Failed-login và session-expiry vẫn trả `UNVERIFIED` cho đến khi có fixture đã làm sạch.
 
-Cache Caffeine gộp các request giống nhau. TTL mặc định 30 giây là cấu hình demo; trước production cần tách TTL theo station, tank, price, realtime và transaction.
+Cache Caffeine gộp các request giống nhau. TTL mặc định 30 giây là cấu hình demo; trước production cần tách TTL theo station, tank, price, realtime và pump-code history.
 
 ## PostgreSQL và migration
 

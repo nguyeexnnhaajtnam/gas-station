@@ -1,0 +1,49 @@
+<app-page-header
+  eyebrow="Nhiên liệu"
+  title="Giá nhiên liệu"
+  subtitle="Giá bán hiện hành theo dữ liệu vận hành của trạm"
+  status="updated"
+  [time]="updatedAt()"
+  [showRefresh]="true"
+  [refreshing]="refreshing()"
+  (refresh)="refresh()"
+></app-page-header>
+
+@if (loading()) {
+  <div class="card-grid">
+    <app-skeleton type="block" [height]="200"></app-skeleton>
+    <app-skeleton type="block" [height]="200"></app-skeleton>
+  </div>
+} @else if (error() && !prices().length) {
+  <app-panel [alert]="true">
+    <app-error-state title="Không thể tải giá nhiên liệu" [message]="error()" (retry)="refresh()"></app-error-state>
+  </app-panel>
+} @else if (!prices().length) {
+  <app-panel>
+    <app-empty-state title="Chưa có giá nhiên liệu" message="Trạm chưa có cấu hình giá bán."></app-empty-state>
+  </app-panel>
+} @else {
+  <div class="page-stack">
+    @if (error()) {
+      <div class="alert-strip"><span class="alert-title">Lần cập nhật gần nhất thất bại.</span><span>Đang hiển thị dữ liệu trước đó.</span></div>
+    }
+    <div class="card-grid">
+      @for (p of views(); track p.id) {
+        <app-panel>
+          <div class="head">
+            <span class="fuel"><span class="swatch" [style.background]="p.color"></span>{{ p.fuelName }}</span>
+            <app-status-tag [tone]="p.status.tone" [label]="p.status.label"></app-status-tag>
+          </div>
+          <div class="price num">
+            <b>{{ p.unitPrice != null ? (p.unitPrice | number: '1.0-0') : '—' }}</b>
+            <span>₫ / lít</span>
+          </div>
+          <div class="foot">
+            <span>Áp dụng từ</span>
+            <b class="num">{{ p.effectiveAt ? (p.effectiveAt | date: 'HH:mm · dd/MM/yyyy') : '—' }}</b>
+          </div>
+        </app-panel>
+      }
+    </div>
+  </div>
+}

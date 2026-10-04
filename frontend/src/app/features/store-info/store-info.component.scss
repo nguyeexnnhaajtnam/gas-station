@@ -1,0 +1,186 @@
+:host {
+  display: block;
+}
+
+.tree {
+  display: flex;
+  flex-direction: column;
+  max-width: 880px;
+}
+
+.parent-head {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: var(--space-4);
+  background: var(--color-text);
+  color: var(--color-neutral-100);
+}
+
+.icon-box {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border: 2px solid var(--color-neutral-500);
+}
+
+.icon-box.dark {
+  width: 36px;
+  height: 36px;
+  border-color: var(--color-text);
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+.kicker {
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: .1em;
+  color: var(--color-neutral-400);
+}
+
+.kicker.muted {
+  color: var(--color-neutral-600);
+}
+
+.title {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.title.small {
+  font-size: 16px;
+}
+
+.parent-body {
+  background: var(--color-neutral-100);
+  border: 2px solid var(--color-text);
+  border-top: 0;
+}
+
+.row {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr);
+  gap: var(--space-3);
+  padding: 10px var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-300);
+}
+
+.parent-body .row:last-child {
+  border-bottom: 0;
+}
+
+.k {
+  font-size: 13px;
+  color: var(--color-neutral-700);
+}
+
+.v {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.v.empty {
+  font-weight: 400;
+  color: var(--color-neutral-500);
+}
+
+// Vertical connector between parent and children
+.trunk {
+  position: relative;
+  padding: 10px 0 10px 50px;
+  font-size: 12.5px;
+  color: var(--color-neutral-700);
+}
+
+.trunk::before {
+  content: '';
+  position: absolute;
+  left: 34px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: var(--color-text);
+}
+
+.child {
+  display: flex;
+  align-items: stretch;
+}
+
+.branch {
+  position: relative;
+  width: 56px;
+  flex: none;
+}
+
+.branch .v {
+  position: absolute;
+  left: 34px;
+  top: 0;
+  width: 2px;
+  height: 30px;
+  background: var(--color-text);
+}
+
+.branch .h {
+  position: absolute;
+  left: 34px;
+  right: 0;
+  top: 28px;
+  height: 2px;
+  background: var(--color-text);
+}
+
+.child-panel {
+  flex: 1;
+}
+
+.child-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  padding: 14px var(--space-4);
+  border-bottom: 1px solid var(--color-neutral-300);
+}
+
+.child-title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-width: 0;
+}
+
+@media (max-width: 639px) {
+  .row {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 2px;
+  }
+
+  .branch {
+    width: 24px;
+  }
+
+  .branch .v,
+  .branch .h {
+    left: 10px;
+  }
+
+  .trunk {
+    padding-left: 24px;
+  }
+
+  .trunk::before {
+    left: 10px;
+  }
+}

@@ -1,11 +1,13 @@
 package vn.gasstation.integration.seenpro.client;
 
 import org.springframework.stereotype.Component;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import vn.gasstation.integration.seenpro.SeenProProperties;
 import vn.gasstation.integration.seenpro.session.SeenProSessionManager;
 import vn.gasstation.infrastructure.logging.RequestLogContext;
+import vn.gasstation.integration.seenpro.debug.SeenProHtmlCapture;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpRequest;
@@ -20,12 +22,16 @@ public class SeenProHttpClient {
     private final SeenProProperties properties;
     private final SeenProSessionManager sessions;
     private final SeenProNavigationDiagnostics diagnostics;
+    private SeenProHtmlCapture htmlCapture;
     public SeenProHttpClient(SeenProProperties properties, SeenProSessionManager sessions,
                              SeenProNavigationDiagnostics diagnostics) {
         this.properties = properties;
         this.sessions = sessions;
         this.diagnostics = diagnostics;
     }
+
+    @Autowired
+    void setHtmlCapture(SeenProHtmlCapture htmlCapture) { this.htmlCapture = htmlCapture; }
 
     public String get(String relativePath, Map<String, String> query) {
         try {
@@ -38,6 +44,7 @@ public class SeenProHttpClient {
             RequestLogContext.providerCall();
             log.info("[SEENPRO] event=request provider=seenpro method=GET path={} queryKeys={}", relativePath, query.keySet());
             var response = sessions.client().send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            capture(relativePath, response);
             long durationMs = (System.nanoTime() - started) / 1_000_000;
             diagnostics.completed("GET", relativePath, response.statusCode(), response.headers(), response.body(),
                 before, sessions, durationMs);
@@ -79,6 +86,7 @@ public class SeenProHttpClient {
                 relativePath, form.keySet());
             var response = sessions.client().send(request,
                 HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            capture(relativePath, response);
             long durationMs = (System.nanoTime() - started) / 1_000_000;
             diagnostics.completed("POST", relativePath, response.statusCode(), response.headers(), response.body(),
                 before, sessions, durationMs);
@@ -116,6 +124,7 @@ public class SeenProHttpClient {
             RequestLogContext.providerCall();
             log.info("[SEENPRO] event=request provider=seenpro method=GET path={} stage=navigation queryKeys={}", relativePath, query.keySet());
             var response = sessions.client().send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            capture(relativePath, response);
             long durationMs = (System.nanoTime() - started) / 1_000_000;
             diagnostics.completed("GET", relativePath, response.statusCode(), response.headers(), response.body(),
                 before, sessions, durationMs);
@@ -149,6 +158,7 @@ public class SeenProHttpClient {
             RequestLogContext.providerCall();
             log.info("[SEENPRO] event=request provider=seenpro method=GET path={} stage=bootstrap-resource", uri.getPath());
             var response = sessions.client().send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
+            capture(relativeReference, response);
             long durationMs = (System.nanoTime() - started) / 1_000_000;
             diagnostics.completed("GET", uri.getPath(), response.statusCode(), response.headers(), response.body(),
                 before, sessions, durationMs);
@@ -191,6 +201,9 @@ public class SeenProHttpClient {
     }
     private static int defaultPort(String scheme) { return "https".equalsIgnoreCase(scheme) ? 443 : 80; }
     private static String encode(String value) { return URLEncoder.encode(value, StandardCharsets.UTF_8); }
+    private void capture(String relativePath, HttpResponse<String> response) {
+        if (htmlCapture != null) htmlCapture.capture(relativePath, response.headers(), response.body());
+    }
     private static void providerError(String method, String reason, String path, Exception error) {
         RequestLogContext.warning();
         log.error("[ERROR] event=provider.error provider=seenpro stage={} errorCode=DATA_PROVIDER_UNAVAILABLE rootCause={} requestId={} method={} path={}",

@@ -32,7 +32,7 @@ public class SeenProPumpRealtimeMapper {
                 ? PumpRealtime.NozzleStatus.HUNG : PumpRealtime.NozzleStatus.UNKNOWN;
         return new PumpRealtime(
             payload.descriptor().pumpCode(), payload.descriptor().pumpName(), "UNKNOWN",
-            decimal(payload.money()), decimal(payload.liters()), decimal(payload.prices()), decimal(payload.totals()),
+            currency(payload.money()), decimal(payload.liters()), currency(payload.prices()), decimal(payload.totals()),
             connection(payload.connectionStates()), operational, nozzle, observedAt);
     }
 
@@ -42,6 +42,14 @@ public class SeenProPumpRealtimeMapper {
             case "0", "false", "offline", "disconnected" -> PumpRealtime.ConnectionStatus.OFFLINE;
             default -> PumpRealtime.ConnectionStatus.UNKNOWN;
         };
+    }
+
+    // VND amounts use '.' as a thousands separator ("27.720" = 27720), unlike liters.
+    private static BigDecimal currency(String raw) {
+        if (raw == null) return null;
+        String value = raw.trim().replaceAll("<[^>]+>", "").replace(" ", "").replace(" ", "");
+        if (value.matches("-?\\d{1,3}(\\.\\d{3})+")) return new BigDecimal(value.replace(".", ""));
+        return decimal(value);
     }
 
     private static BigDecimal decimal(String raw) {

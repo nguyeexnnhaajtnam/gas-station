@@ -1,0 +1,3 @@
+package vn.gasstation.integration.seenpro.mapper;
+import org.springframework.stereotype.Component;import vn.gasstation.customer.domain.Customer;import vn.gasstation.integration.seenpro.model.SeenProCustomerRow;
+@Component public class SeenProCustomerMapper {public Customer map(SeenProCustomerRow source){return new Customer(clean(source.customerCode()),clean(source.companyName()),clean(source.taxCode()),clean(source.address()),clean(source.email()));}private String clean(String value){if(value==null||value.isBlank())return null;String cleaned=value.trim().replaceAll("\\s+"," ");return cleaned.equalsIgnoreCase("Chưa cập nhật")?null:cleaned;}}

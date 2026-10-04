@@ -36,10 +36,10 @@ import { LucideUser, LucideLogOut } from '../../icons';
     .avatar {
       display: grid;
       place-items: center;
-      width: 34px;
-      height: 34px;
+      width: 40px;
+      height: 40px;
       border: 0;
-      background: var(--sidebar-line);
+      background: var(--color-text);
       color: #fff;
     }
 

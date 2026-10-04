@@ -9,3 +9,5 @@ frontend/.angular/
 *.log
 .tools/
 .m2/
+logs/seenpro/
+backend/logs/seenpro/

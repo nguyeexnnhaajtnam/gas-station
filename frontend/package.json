@@ -3,8 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "start": "ng serve --configuration development",
-    "start:dev": "ng serve --configuration development",
+    "dev": "ng serve --configuration development --poll 1000 --hmr",
+    "start": "npm run dev",
+    "start:dev": "npm run dev",
     "build": "ng build",
     "test": "ng test --watch=false"
   },

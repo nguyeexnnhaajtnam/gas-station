@@ -5,7 +5,6 @@ import vn.gasstation.dashboard.domain.PriceSnapshot;
 import vn.gasstation.dashboard.domain.StoreInfo;
 import vn.gasstation.integration.seenpro.client.LegacySystemUnavailableException;
 import vn.gasstation.tank.application.TankProvider;
-import vn.gasstation.transaction.application.TransactionProvider;
 import vn.gasstation.pump.application.OnlineAggregator;
 import vn.gasstation.pump.domain.PumpRealtimeSnapshot;
 import java.time.OffsetDateTime;
@@ -17,14 +16,13 @@ import static org.mockito.Mockito.*;
 
 class CompositeDashboardProviderTest {
     @Test
-    void returnsPartialSummaryWithoutCallingUnfinishedTransactionProvider() {
+    void returnsPartialSummaryWhenSourcesAreUnavailable() {
         var stores = mock(StoreInfoProvider.class);
         var reports = mock(ReportProvider.class);
         var tanks = mock(TankProvider.class);
         var prices = mock(PriceProvider.class);
-        var transactions = mock(TransactionProvider.class);
         var online = mock(OnlineAggregator.class);
-        var provider = new CompositeDashboardProvider(stores, reports, tanks, prices, transactions, online);
+        var provider = new CompositeDashboardProvider(stores, reports, tanks, prices, online);
 
         when(stores.current()).thenReturn(Optional.of(new StoreInfo(true)));
         when(reports.summary(null, null)).thenReturn(Optional.empty());
@@ -41,7 +39,6 @@ class CompositeDashboardProviderTest {
         assertThat(summary.partial()).isTrue();
         assertThat(summary.onlinePumpCount()).isNull();
         assertThat(summary.pumpOverview()).isEmpty();
-        assertThat(summary.unavailableSources()).containsExactly("REPORT", "TANKS", "ONLINE", "TRANSACTIONS");
-        verifyNoInteractions(transactions);
+        assertThat(summary.unavailableSources()).containsExactly("REPORT", "TANKS", "ONLINE");
     }
 }

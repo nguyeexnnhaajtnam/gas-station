@@ -12,7 +12,6 @@ import vn.gasstation.pump.application.OnlineAggregator;
 import vn.gasstation.pump.domain.PumpRealtime;
 import vn.gasstation.pump.domain.PumpRealtimeSnapshot;
 import vn.gasstation.tank.application.TankProvider;
-import vn.gasstation.transaction.application.TransactionProvider;
 import vn.gasstation.infrastructure.logging.RequestLogContext;
 
 import java.time.LocalDate;
@@ -28,16 +27,14 @@ public class CompositeDashboardProvider implements DashboardProvider {
     private final ReportProvider reports;
     private final TankProvider tanks;
     private final PriceProvider prices;
-    private final TransactionProvider transactions;
     private final OnlineAggregator online;
 
     public CompositeDashboardProvider(StoreInfoProvider stores, ReportProvider reports, TankProvider tanks,
-                                      PriceProvider prices, TransactionProvider transactions, OnlineAggregator online) {
+                                      PriceProvider prices, OnlineAggregator online) {
         this.stores = stores;
         this.reports = reports;
         this.tanks = tanks;
         this.prices = prices;
-        this.transactions = transactions;
         this.online = online;
     }
 
@@ -50,10 +47,6 @@ public class CompositeDashboardProvider implements DashboardProvider {
         Optional<PriceSnapshot> price = safely("PRICES", prices::current, unavailable).flatMap(value -> value);
         Optional<PumpRealtimeSnapshot> realtime = safely("ONLINE", online::currentSnapshot, unavailable);
         if (realtime.isPresent() && !realtime.get().available()) unavailable.add("ONLINE");
-
-        // TransactionProvider is intentionally not called until theodoibanhang.php has a confirmed parser fixture.
-        // Keeping it as a composed dependency makes the future enrichment explicit without coupling current summary availability to it.
-        if (transactions != null) unavailable.add("TRANSACTIONS");
 
         var summary = new DashboardSummary(
             report.map(ReportSnapshot::revenue).orElse(null),

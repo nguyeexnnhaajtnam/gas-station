@@ -1,0 +1,82 @@
+<app-page-header
+  eyebrow="Vận hành"
+  title="Cột bơm"
+  subtitle="Danh sách cấu hình cột bơm của trạm"
+  status="updated"
+  [time]="updatedAt()"
+  [showRefresh]="true"
+  [refreshing]="loading()"
+  (refresh)="load()"
+></app-page-header>
+
+<app-data-list
+  [state]="state()"
+  searchPlaceholder="Tìm mã cột, tên cột, nhiên liệu…"
+  [query]="query()"
+  (queryChange)="query.set($event)"
+  [countLabel]="filtered().length + ' cột bơm'"
+  [page]="page()"
+  [totalPages]="totalPages()"
+  (pageChange)="page.set($event)"
+  [skeletonColumns]="7"
+  [emptyTitle]="columns().length ? 'Không có cột bơm phù hợp' : 'Trạm chưa có cột bơm'"
+  [emptyMessage]="columns().length ? 'Thử bỏ bộ lọc hoặc đổi từ khóa tìm kiếm.' : 'Cột bơm sẽ hiển thị khi trạm có cấu hình cột bơm.'"
+  errorTitle="Không thể tải cột bơm"
+  [errorMessage]="error()"
+  (retry)="load()"
+>
+  <label filters class="filter-btn">
+    <span class="filter-label">Kết nối</span><b>{{ connection() ? connLabels[connection() || 'UNKNOWN'].label : 'Tất cả' }}</b><svg lucideChevronDown [size]="14"></svg>
+    <select [value]="connection()" (change)="connection.set($any($event.target).value)" aria-label="Kết nối">
+      <option value="">Tất cả</option>
+      <option value="ONLINE">Online</option>
+      <option value="OFFLINE">Offline</option>
+      <option value="UNKNOWN">Không rõ</option>
+    </select>
+  </label>
+  <label filters class="filter-btn">
+    <span class="filter-label">Nhiên liệu</span><b>{{ fuel() || 'Tất cả' }}</b><svg lucideChevronDown [size]="14"></svg>
+    <select [value]="fuel()" (change)="fuel.set($any($event.target).value)" aria-label="Nhiên liệu">
+      <option value="">Tất cả</option>
+      @for (f of fuels(); track f) {
+        <option [value]="f">{{ f }}</option>
+      }
+    </select>
+  </label>
+
+  <table class="dl-table" style="min-width: 900px">
+    <thead>
+      <tr>
+        <th>Tên cột</th>
+        <th>Nhiên liệu</th>
+        <th>Địa chỉ thiết bị</th>
+        <th>Số serial</th>
+        <th>Hiển thị</th>
+        <th class="num">Total</th>
+        <th>Kết nối</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (c of paged(); track c.id) {
+        <tr>
+          <td class="nowrap">
+            <span class="cell-main">{{ c.name || c.id }}</span>
+            <span class="cell-sub">{{ c.id }}</span>
+          </td>
+          <td class="nowrap">{{ c.fuelType || 'Chưa cài đặt' }}</td>
+          <td class="nowrap">
+            @if (c.deviceAddress) {
+              <span class="mono">{{ c.deviceAddress }}</span>
+            } @else {
+              <span class="muted">Chưa cài đặt</span>
+            }
+          </td>
+          <td class="nowrap" [class.muted]="!c.serialNumber">{{ c.serialNumber || 'Chưa cài đặt' }}</td>
+          <td class="nowrap" [class.muted]="!c.displayName">{{ c.displayName || 'Chưa cài đặt' }}</td>
+          <td class="num">{{ c.totalizer != null ? (c.totalizer | number: '1.2-2') + ' L' : '—' }}</td>
+          <td><app-status-tag [tone]="tone(c.connectionStatus)" [label]="connLabels[c.connectionStatus].label"></app-status-tag></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</app-data-list>

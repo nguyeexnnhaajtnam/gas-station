@@ -39,7 +39,11 @@ Requirements: Java 25, Maven 3.9+, Node.js 20+, Docker.
 1. Copy `.env.example` to `.env` and set local values. Do not commit it.
 2. Start PostgreSQL: `docker compose up -d postgres`.
 3. Start backend: `cd backend && mvn spring-boot:run`.
-4. Install/start frontend: `cd frontend && npm install && npm start`.
+4. Install/start frontend: `cd frontend && npm install && npm run dev`.
+
+The development server uses Angular HMR with a polling file watcher. Changes under
+`frontend/src` are rebuilt and applied automatically, including newly created or
+renamed lazy-loaded components on Windows.
 5. Open `http://localhost:4200`; Swagger UI is at `http://localhost:8080/swagger-ui.html`.
 
 SeenPro calls intentionally return 503 until confirmed login and HTML fixtures are supplied. See [integration status](docs/seenpro-integration.md).

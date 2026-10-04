@@ -1,0 +1,137 @@
+<app-page-header
+  eyebrow="Báo cáo"
+  title="Báo cáo doanh thu"
+  subtitle="Phân tích doanh thu và sản lượng theo thời gian"
+  status="updated"
+  [time]="updatedAt()"
+  [showRefresh]="true"
+  [refreshing]="loading()"
+  (refresh)="load()"
+></app-page-header>
+
+<ng-template #detailTable let-rows let-title="title">
+  <app-panel [title]="title">
+    @if (rows.length) {
+      <div class="dl-scroll">
+        <table class="dl-table" style="min-width: 560px">
+          <thead>
+            <tr><th>Tên</th><th class="num">Tổng lít</th><th class="num">Tổng tiền</th><th class="num">Số lượng</th></tr>
+          </thead>
+          <tbody>
+            @for (row of rows; track row.name) {
+              <tr>
+                <td><span class="cell-main">{{ row.name }}</span></td>
+                <td class="num">{{ row.liters | number: '1.2-2' }} L</td>
+                <td class="num">{{ row.revenue | number: '1.0-0' }} ₫</td>
+                <td class="num">{{ row.count | number: '1.0-0' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <app-empty-state variant="inline" title="Chưa có dữ liệu" message="Không có dữ liệu trong khoảng thời gian đã chọn."></app-empty-state>
+    }
+  </app-panel>
+</ng-template>
+
+<div class="page-stack">
+  <form class="filters" (submit)="$event.preventDefault(); load()">
+    <label class="filter-btn">
+      <span class="filter-label">Từ</span>
+      <input type="date" [value]="from()" (change)="from.set($any($event.target).value)" aria-label="Từ ngày" />
+    </label>
+    <label class="filter-btn">
+      <span class="filter-label">Đến</span>
+      <input type="date" [value]="to()" (change)="to.set($any($event.target).value)" aria-label="Đến ngày" />
+    </label>
+    <button type="submit" class="btn btn-primary analyze" [disabled]="loading()">Phân tích</button>
+  </form>
+
+  @if (loading()) {
+    <app-skeleton type="block" [height]="96"></app-skeleton>
+    <div class="split-grid">
+      <app-skeleton type="block" [height]="260"></app-skeleton>
+      <app-skeleton type="block" [height]="260"></app-skeleton>
+    </div>
+  } @else if (error()) {
+    <app-panel [alert]="true">
+      <app-error-state title="Không thể tải báo cáo" [message]="error()" (retry)="load()"></app-error-state>
+    </app-panel>
+  } @else if (isEmpty()) {
+    <app-panel>
+      <app-empty-state title="Chưa có dữ liệu bán hàng" message="Không có giao dịch trong khoảng thời gian đã chọn. Thử chọn khoảng thời gian khác."></app-empty-state>
+    </app-panel>
+  } @else {
+    <app-stat-strip [items]="headline()"></app-stat-strip>
+
+    <div class="report-grid">
+      <app-panel class="pumps" title="Sản lượng theo cột bơm" [meta]="rangeLabel()">
+        @if (pumpBars().length) {
+          <div class="bars">
+            @for (b of pumpBars(); track b.name) {
+              <div class="bar-row">
+                <span class="bar-name" [title]="b.name">{{ b.name }}</span>
+                <span class="track"><i [style.width.%]="b.pct" [class.top]="b.top"></i></span>
+                <span class="bar-val num">{{ b.liters | number: '1.0-0' }} L</span>
+              </div>
+            }
+          </div>
+        } @else {
+          <app-empty-state variant="inline" title="Chưa có sản lượng theo cột bơm."></app-empty-state>
+        }
+      </app-panel>
+
+      <app-panel title="Cơ cấu nhiên liệu" meta="theo lít">
+        @if (mix().rows.length) {
+          <div class="mix">
+            <span class="mix-total num"><b>{{ mix().total | number: '1.0-0' }}</b> lít</span>
+            <div class="mix-bar">
+              @for (m of mix().rows; track m.name) {
+                <i [style.flex]="m.liters" [style.background]="m.color" [title]="m.name"></i>
+              }
+            </div>
+            <div class="legend">
+              @for (m of mix().rows; track m.name) {
+                <span class="legend-item">
+                  <span class="swatch" [style.background]="m.color"></span>
+                  <span><b>{{ m.name }}</b><small class="num">{{ m.share | number: '1.0-0' }}% · {{ m.liters | number: '1.0-0' }} L</small></span>
+                </span>
+              }
+            </div>
+          </div>
+        } @else {
+          <app-empty-state variant="inline" title="Chưa có sản lượng theo nhiên liệu."></app-empty-state>
+        }
+      </app-panel>
+
+      <app-panel title="Hóa đơn" meta="so với sản lượng bán">
+        @if (invoice().overall != null) {
+          <div class="invoice">
+            <span class="invoice-total num"><b>{{ invoice().overall | number: '1.2-2' }}%</b> lít đã xuất hóa đơn</span>
+            @for (r of invoice().rows; track r.name) {
+              <div class="progress">
+                <span class="progress-head"><b>{{ r.name }}</b><span class="num">{{ r.pct | number: '1.2-2' }}%</span></span>
+                <span class="track thin"><i class="top" [style.width.%]="r.pct"></i></span>
+              </div>
+            }
+          </div>
+        } @else {
+          <app-empty-state variant="inline" title="Chưa có dữ liệu hóa đơn."></app-empty-state>
+        }
+      </app-panel>
+    </div>
+
+    <div>
+      <button type="button" class="btn btn-outline" [attr.aria-expanded]="showDetail()" (click)="showDetail.set(!showDetail())">
+        {{ showDetail() ? 'Ẩn bảng chi tiết' : 'Xem bảng chi tiết' }}
+      </button>
+    </div>
+
+    @if (showDetail()) {
+      <ng-container *ngTemplateOutlet="detailTable; context: { $implicit: report()!.fuels, title: 'Theo nhiên liệu' }"></ng-container>
+      <ng-container *ngTemplateOutlet="detailTable; context: { $implicit: report()!.pumps, title: 'Theo cột bơm' }"></ng-container>
+      <ng-container *ngTemplateOutlet="detailTable; context: { $implicit: report()!.invoices, title: 'Hóa đơn' }"></ng-container>
+    }
+  }
+</div>

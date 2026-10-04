@@ -1,15 +1,16 @@
-<aside class="sidebar" [class.collapsed]="collapsed()">
+@if (layout.compact() && layout.navOpen()) {
+  <div class="backdrop" (click)="layout.closeNav()"></div>
+}
+<aside class="sidebar" [class.drawer]="layout.compact()" [class.open]="layout.navOpen()">
   <div class="brand">
     <span class="mark"><svg lucideFuel [size]="18"></svg></span>
-    @if (!collapsed()) {
-      <div class="brand-text">
-        <b>Gas Station</b>
-        <small>Quản lý cửa hàng</small>
-      </div>
-    }
+    <div class="brand-text">
+      <b>Gas Station</b>
+      <small>Quản lý cửa hàng</small>
+    </div>
   </div>
 
-  @if (!hasStation() && !collapsed()) {
+  @if (!hasStation()) {
     <div class="hint">
       <svg lucideLock [size]="14"></svg>
       <span>Chọn công ty và trạm để mở các chức năng vận hành.</span>
@@ -17,57 +18,36 @@
   }
 
   <nav>
-    @for (group of groups; track group.label) {
-      @if (!collapsed()) {
-        <p class="group-label">{{ group.label }}</p>
-      }
-      @for (item of group.items; track item.link) {
-        @if (item.requiresStation && !hasStation()) {
-          <span class="nav-item disabled" [title]="disabledTitle(item)">
-            <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{ $implicit: item.icon }"></ng-container>
-            @if (!collapsed()) {
-              <span class="label">{{ item.label }}</span>
-            }
-          </span>
-        } @else {
-          <a class="nav-item" [routerLink]="item.link" routerLinkActive="active" [title]="collapsed() ? item.label : ''">
-            <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{ $implicit: item.icon }"></ng-container>
-            @if (!collapsed()) {
-              <span class="label">{{ item.label }}</span>
-            }
-          </a>
-        }
+    @for (item of items; track item.link) {
+      @if (locked(item)) {
+        <span class="nav-item locked" [title]="lockedTitle(item)">
+          <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{ $implicit: item.icon }"></ng-container>
+          <span class="label">{{ item.label }}</span>
+          @if (item.soon) {
+            <span class="soon">SẮP CÓ</span>
+          }
+        </span>
+      } @else {
+        <a class="nav-item" [routerLink]="item.link" routerLinkActive="active" (click)="layout.closeNav()">
+          <ng-container [ngTemplateOutlet]="iconTpl" [ngTemplateOutletContext]="{ $implicit: item.icon }"></ng-container>
+          <span class="label">{{ item.label }}</span>
+        </a>
       }
     }
   </nav>
-
-  <div class="footer">
-    <button type="button" class="collapse-toggle" (click)="toggleCollapse()">
-      @if (collapsed()) {
-        <svg lucideChevronsRight [size]="16"></svg>
-      } @else {
-        <svg lucideChevronsLeft [size]="16"></svg>
-        <span>Thu gọn</span>
-      }
-    </button>
-  </div>
 </aside>
 
 <ng-template #iconTpl let-icon>
   @switch (icon) {
     @case ('dashboard') { <svg lucideLayoutDashboard [size]="18" class="icon"></svg> }
-    @case ('gauge') { <svg lucideGauge [size]="18" class="icon"></svg> }
-    @case ('receipt') { <svg lucideReceipt [size]="18" class="icon"></svg> }
-    @case ('shift') { <svg lucideClipboardList [size]="18" class="icon"></svg> }
-    @case ('tank') { <svg lucideDroplet [size]="18" class="icon"></svg> }
-    @case ('warehouse') { <svg lucideWarehouse [size]="18" class="icon"></svg> }
-    @case ('tag') { <svg lucideTag [size]="18" class="icon"></svg> }
-    @case ('users') { <svg lucideUsers [size]="18" class="icon"></svg> }
+    @case ('activity') { <svg lucideActivity [size]="18" class="icon"></svg> }
+    @case ('barcode') { <svg lucideBarcode [size]="18" class="icon"></svg> }
     @case ('fuel') { <svg lucideFuel [size]="18" class="icon"></svg> }
-    @case ('wallet') { <svg lucideWallet [size]="18" class="icon"></svg> }
-    @case ('file') { <svg lucideFileText [size]="18" class="icon"></svg> }
-    @case ('building') { <svg lucideBuilding [size]="18" class="icon"></svg> }
-    @case ('user') { <svg lucideUser [size]="18" class="icon"></svg> }
-    @case ('settings') { <svg lucideSettings [size]="18" class="icon"></svg> }
+    @case ('tag') { <svg lucideTag [size]="18" class="icon"></svg> }
+    @case ('tank') { <svg lucideCylinder [size]="18" class="icon"></svg> }
+    @case ('shift') { <svg lucideCalendarClock [size]="18" class="icon"></svg> }
+    @case ('store') { <svg lucideStore [size]="18" class="icon"></svg> }
+    @case ('users') { <svg lucideUsers [size]="18" class="icon"></svg> }
+    @case ('chart') { <svg lucideChartColumn [size]="18" class="icon"></svg> }
   }
 </ng-template>

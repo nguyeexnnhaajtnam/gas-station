@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import vn.gasstation.dashboard.domain.DashboardSummary;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 
 @Service
 public class DashboardService {
@@ -14,6 +15,7 @@ public class DashboardService {
     }
 
     public DashboardSummary summary(LocalDate from, LocalDate to) {
-        return provider.summary(from, to);
+        LocalDate today = LocalDate.now(ZoneId.of("Asia/Ho_Chi_Minh"));
+        return provider.summary(from == null ? today : from, to == null ? today : to);
     }
 }

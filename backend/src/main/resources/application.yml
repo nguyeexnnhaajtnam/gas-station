@@ -27,3 +27,6 @@ app:
 springdoc.swagger-ui.path: /swagger-ui.html
 management.endpoints.web.exposure.include: health,info
 logging.pattern.level: "%5p [requestId:%X{requestId:-none}]"
+seenpro:
+  debug:
+    capture-html: ${SEENPRO_DEBUG_CAPTURE_HTML:false}

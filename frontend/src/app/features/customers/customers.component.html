@@ -1,0 +1,53 @@
+<app-page-header
+  eyebrow="Kinh doanh"
+  title="Khách hàng"
+  subtitle="Danh sách khách hàng của trạm"
+  status="updated"
+  [time]="updatedAt()"
+  [showRefresh]="true"
+  [refreshing]="loading()"
+  (refresh)="load()"
+></app-page-header>
+
+<app-data-list
+  [state]="state()"
+  searchPlaceholder="Tên đơn vị, MST hoặc mã khách hàng…"
+  [query]="query()"
+  (queryChange)="query.set($event)"
+  [countLabel]="countLabel()"
+  [page]="page()"
+  [totalPages]="totalPages()"
+  (pageChange)="page.set($event)"
+  [skeletonColumns]="4"
+  [emptyTitle]="customers().length ? 'Không có khách hàng phù hợp' : 'Trạm chưa có khách hàng'"
+  [emptyMessage]="customers().length ? 'Thử đổi từ khóa tìm kiếm.' : 'Khách hàng sẽ hiển thị khi trạm có dữ liệu khách hàng.'"
+  [emptyActionLabel]="query() ? 'Xóa tìm kiếm' : ''"
+  (emptyAction)="query.set('')"
+  errorTitle="Không thể tải khách hàng"
+  [errorMessage]="error()"
+  (retry)="load()"
+>
+  <table class="dl-table" style="min-width: 980px">
+    <thead>
+      <tr>
+        <th>Đơn vị</th>
+        <th>MST</th>
+        <th>Địa chỉ</th>
+        <th>Email</th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (c of paged(); track c.id) {
+        <tr>
+          <td class="name">
+            <span class="cell-main">{{ c.name }}</span>
+            <span class="cell-sub mono">{{ c.id }}</span>
+          </td>
+          <td class="nowrap" [class.muted]="!c.taxCode">{{ c.taxCode || '—' }}</td>
+          <td [class.muted]="!c.address">{{ c.address || 'Chưa cập nhật' }}</td>
+          <td class="nowrap" [class.muted]="!c.email">{{ c.email || '—' }}</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</app-data-list>

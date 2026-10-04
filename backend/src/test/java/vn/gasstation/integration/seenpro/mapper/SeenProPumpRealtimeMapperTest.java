@@ -34,6 +34,20 @@ class SeenProPumpRealtimeMapperTest {
     }
 
     @Test
+    void treatsDotAsThousandsSeparatorForMoneyAndPriceOnly() {
+        var descriptor = new SeenProPumpDescriptor("CB01", "Cột 01", "AA", "1", "2",
+            "legacy-fuel-id", "user", "connect-01", "pump-01", "dispensing");
+        var payload = new SeenProOnlinePayload(descriptor, "30.000", "1.08", "27.720", "252269.13", "online", "dispensing");
+
+        var pump = new SeenProPumpRealtimeMapper().map(List.of(payload)).pumps().get(0);
+
+        assertThat(pump.money()).isEqualByComparingTo(new BigDecimal("30000"));
+        assertThat(pump.unitPrice()).isEqualByComparingTo(new BigDecimal("27720"));
+        assertThat(pump.liters()).isEqualByComparingTo(new BigDecimal("1.08"));
+        assertThat(pump.totalizer()).isEqualByComparingTo(new BigDecimal("252269.13"));
+    }
+
+    @Test
     void mapsSeenProPumpImageResponsesWithoutExposingTheirPaths() {
         var descriptor = new SeenProPumpDescriptor(
             "CB01", "Cá»™t 01", "AA:BB", "1", "2", "RON95", "operator",

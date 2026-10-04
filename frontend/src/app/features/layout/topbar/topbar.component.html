@@ -1,8 +1,13 @@
 <header class="topbar">
+  @if (layout.compact()) {
+    <button type="button" class="hamburger" title="Menu" aria-label="Mở menu" (click)="layout.openNav()">
+      <svg lucideMenu [size]="18"></svg>
+    </button>
+  }
   <div class="right">
     <app-context-switcher></app-context-switcher>
 
-    <button type="button" class="btn-icon" title="Thông báo" disabled>
+    <button type="button" class="icon-btn" title="Thông báo" disabled>
       <svg lucideBell [size]="18"></svg>
     </button>
 
