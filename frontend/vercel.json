@@ -1,0 +1,10 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": null,
+  "buildCommand": "npm run build",
+  "outputDirectory": "dist/gas-station/browser",
+  "rewrites": [
+    { "source": "/api/:path*", "destination": "https://REPLACE-WITH-RENDER-SERVICE.onrender.com/api/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}

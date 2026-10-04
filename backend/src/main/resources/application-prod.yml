@@ -1,0 +1,12 @@
+# Deployed profile: all settings come from environment variables (see docs/DEPLOY.md).
+spring:
+  jpa:
+    hibernate.ddl-auto: validate
+  flyway:
+    enabled: true
+seenpro:
+  debug:
+    capture-html: false
+logging:
+  level:
+    root: INFO
